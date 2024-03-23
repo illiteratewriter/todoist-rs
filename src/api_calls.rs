@@ -2,7 +2,7 @@ use reqwest::header::AUTHORIZATION;
 
 use crate::projects;
 
-pub async fn fetchProjects() -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
+pub async fn fetch_projects() -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
     let response = client
@@ -18,6 +18,6 @@ pub async fn fetchProjects() -> Result<Vec<projects::Project>, Box<dyn std::erro
 
     let serialized: Vec<projects::Project> = serde_json::from_str(&response)?;
 
-    println!("response = {:#?}", serialized);
+    // println!("response = {:#?}", serialized);
     Ok(serialized)
 }

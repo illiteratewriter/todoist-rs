@@ -1,7 +1,9 @@
 use std::io::{self, stdout, Stdout};
 
 use crossterm::{execute, terminal::*};
-use ratatui::{prelude::*, widgets::{Block, Borders, Paragraph}};
+use ratatui::{prelude::*, widgets::{Block, Borders, List, ListItem, Paragraph}};
+
+use crate::App;
 
 pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
@@ -17,7 +19,7 @@ pub fn restore() -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn ui(f: &mut Frame) {
+pub fn ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -38,4 +40,13 @@ pub fn ui(f: &mut Frame) {
     .block(title_block);
 
     f.render_widget(title, chunks[0]);
+
+    let mut list_items = Vec::<ListItem>::new();
+
+    for project in &app.projects {
+        list_items.push(ListItem::new(Line::from(Span::styled(format!("{}", project.name), Style::default().fg(Color::Yellow)))))
+    }
+
+    let list = List::new(list_items);
+    f.render_widget(list, chunks[1]);
 }

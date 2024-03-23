@@ -1,7 +1,8 @@
-use api_calls::fetchProjects;
+use api_calls::fetch_projects;
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Project;
-use ratatui::{style::Stylize, widgets::Paragraph};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 mod api_calls;
 mod projects;
@@ -26,33 +27,40 @@ impl App {
     }
 
     pub async fn initialise(&mut self) {
-        let projects = fetchProjects().await.unwrap();
+        let projects = fetch_projects().await.unwrap();
         self.projects = projects;
     }
 }
 
+
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     let mut terminal = tui::init()?;
-    let mut app = App::new();
+    let app = Arc::new(Mutex::new(App::new()));
 
-    // let initialise_task = tokio::spawn(async move {
-    //     app.initialise().await;
-    // });
+    let app_clone = Arc::clone(&app);
+    let initialise_task = tokio::spawn(async move {
+        let mut app = app_clone.lock().await;
+        app.initialise().await;
+    });
 
     loop {
-        terminal.draw(|frame| tui::ui(frame))?;
+        let mut app = app.lock().await;
+        terminal.draw(|frame| {
+            tui::ui(frame, &mut app)
+        })?;
         
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
-                    break;
+                if key.kind == KeyEventKind::Press {
+                    if key.code == KeyCode::Char('q') {
+                        break;
+                    }
                 }
             }
         }
     }
     tui::restore()?;    
-    // api_calls::test().await.unwrap();
-    // let _ = initialise_task.await;
+    let _ = initialise_task.await;
     Ok(())
 }
