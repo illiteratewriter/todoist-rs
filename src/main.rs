@@ -45,8 +45,10 @@ async fn main() -> Result<(), std::io::Error> {
 
     let app_clone = Arc::clone(&app);
     let initialise_task = tokio::spawn(async move {
+        let project_resp = api_calls::fetch_projects().await.unwrap();
+        let projects = Projects::new(project_resp);
         let mut app = app_clone.lock().await;
-        app.initialise().await;
+        app.projects = projects;
     });
 
     loop {

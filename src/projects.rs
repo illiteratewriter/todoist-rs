@@ -34,9 +34,9 @@ pub enum ListType {
 }
 
 impl Projects {
-    pub fn new() -> Projects {
+    pub fn new(items: Vec<Project>) -> Projects {
         Projects {
-            projects: vec![],
+            projects: items,
             state: ListState::default(),
         }
     }
