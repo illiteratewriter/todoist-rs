@@ -1,4 +1,13 @@
+use ratatui::widgets::ListState;
 use serde::{Deserialize, Serialize};
+
+use crate::api_calls;
+
+#[derive(Debug, Default)]
+pub struct Projects {
+    pub projects: Vec<Project>,
+    pub state: ListState
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -22,4 +31,17 @@ pub struct Project {
 pub enum ListType {
     Board,
     List,
+}
+
+impl Projects {
+    pub fn new() -> Projects {
+        Projects {
+            projects: vec![],
+            state: ListState::default()
+        }
+    }
+
+    pub async fn initialise(&mut self) {
+        self.projects = api_calls::fetch_projects().await.unwrap();
+    }
 }

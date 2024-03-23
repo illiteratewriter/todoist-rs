@@ -1,6 +1,5 @@
-use api_calls::fetch_projects;
 use crossterm::event::{self, KeyCode, KeyEventKind};
-use projects::Project;
+use projects::Projects;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -18,8 +17,10 @@ pub enum CurrentScreen {
 pub struct App {
     pub current_screen: CurrentScreen,
     pub exit: bool,
-    pub projects: Vec<Project>
+    pub projects: Projects
 }
+
+
 
 impl App {
     pub fn new() -> App {
@@ -27,8 +28,7 @@ impl App {
     }
 
     pub async fn initialise(&mut self) {
-        let projects = fetch_projects().await.unwrap();
-        self.projects = projects;
+        self.projects.initialise().await;
     }
 }
 
@@ -43,6 +43,7 @@ async fn main() -> Result<(), std::io::Error> {
         let mut app = app_clone.lock().await;
         app.initialise().await;
     });
+    
 
     loop {
         let mut app = app.lock().await;

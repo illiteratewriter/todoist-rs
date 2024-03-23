@@ -29,6 +29,14 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         ])
         .split(f.size());
 
+    let inner_layout = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(vec![
+            Constraint::Percentage(25),
+            Constraint::Percentage(75),
+        ])
+        .split(chunks[1]);
+
     let title_block = Block::default()
         .borders(Borders::ALL)
         .style(Style::default());
@@ -37,16 +45,16 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         "Todoist",
         Style::default().fg(Color::Green),
     ))
-    .block(title_block);
+    .block(title_block.clone());
 
     f.render_widget(title, chunks[0]);
 
     let mut list_items = Vec::<ListItem>::new();
 
-    for project in &app.projects {
+    for project in &app.projects.projects {
         list_items.push(ListItem::new(Line::from(Span::styled(format!("{}", project.name), Style::default().fg(Color::Yellow)))))
     }
 
-    let list = List::new(list_items);
-    f.render_widget(list, chunks[1]);
+    let list = List::new(list_items).block(title_block);
+    f.render_widget(list, inner_layout[0]);
 }
