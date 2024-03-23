@@ -13,11 +13,19 @@ pub enum CurrentScreen {
     Main,
 }
 
+#[derive(Debug, Default, PartialEq)]
+pub enum CurrentFocus {
+    #[default]
+    Projects,
+    Tasks
+}
+
 #[derive(Debug, Default)]
 pub struct App {
     pub current_screen: CurrentScreen,
     pub exit: bool,
     pub projects: Projects,
+    pub current_focus: CurrentFocus
 }
 
 impl App {
@@ -48,11 +56,30 @@ async fn main() -> Result<(), std::io::Error> {
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
+                    if key.code == KeyCode::Char('t') {
+                        println!("T was pressed");
+                    }
                     if key.code == KeyCode::Char('q') {
                         break;
-                    } else if key.code == KeyCode::Char('a') {
-                        app.projects.next();
+                    } else if key.code == KeyCode::Tab {
+                        match app.current_focus {
+                            CurrentFocus::Projects => app.current_focus = CurrentFocus::Tasks,
+                            CurrentFocus::Tasks => app.current_focus = CurrentFocus::Projects
+                        }
                     }
+                    
+                    if app.current_focus == CurrentFocus::Projects {
+                        if key.code == KeyCode::Char('j') {
+                            app.projects.next();
+                        } else if key.code == KeyCode::Char('k') {
+                            app.projects.previous();
+                        } else if key.code == KeyCode::Enter {
+                            println!("FROM HERE ");
+                            app.projects.select().await;
+                        }
+                    }
+                    
+                    
                 }
             }
         }

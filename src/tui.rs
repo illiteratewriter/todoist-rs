@@ -3,10 +3,10 @@ use std::io::{self, stdout, Stdout};
 use crossterm::{execute, terminal::*};
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
+    widgets::{block::Title, Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
 };
 
-use crate::App;
+use crate::{App, CurrentFocus};
 
 pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
@@ -42,7 +42,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .style(Style::default());
 
     let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green)))
-        .block(title_block.clone());
+        .block(title_block);
 
     f.render_widget(title, chunks[0]);
 
@@ -55,8 +55,15 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         ))))
     }
 
+    let my_projects_block = Block::default()
+        .title(Title::from(" My projects ".bold()).alignment(Alignment::Left))
+        .borders(Borders::ALL).fg(match app.current_focus {
+            CurrentFocus::Projects => Color::Green,
+            _ => Color::White
+        });
+
     let list = List::new(list_items)
-        .block(title_block)
+        .block(my_projects_block)
         .highlight_style(
             Style::default()
                 .add_modifier(Modifier::BOLD)
