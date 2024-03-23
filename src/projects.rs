@@ -6,7 +6,7 @@ use crate::api_calls;
 #[derive(Debug, Default)]
 pub struct Projects {
     pub projects: Vec<Project>,
-    pub state: ListState
+    pub state: ListState,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,11 +37,25 @@ impl Projects {
     pub fn new() -> Projects {
         Projects {
             projects: vec![],
-            state: ListState::default()
+            state: ListState::default(),
         }
     }
 
     pub async fn initialise(&mut self) {
         self.projects = api_calls::fetch_projects().await.unwrap();
+    }
+
+    pub fn next(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i >= self.projects.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
     }
 }

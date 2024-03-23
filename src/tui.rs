@@ -1,7 +1,10 @@
 use std::io::{self, stdout, Stdout};
 
 use crossterm::{execute, terminal::*};
-use ratatui::{prelude::*, widgets::{Block, Borders, List, ListItem, Paragraph}};
+use ratatui::{
+    prelude::*,
+    widgets::{Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
+};
 
 use crate::App;
 
@@ -31,30 +34,36 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     let inner_layout = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(vec![
-            Constraint::Percentage(25),
-            Constraint::Percentage(75),
-        ])
+        .constraints(vec![Constraint::Percentage(25), Constraint::Percentage(75)])
         .split(chunks[1]);
 
     let title_block = Block::default()
         .borders(Borders::ALL)
         .style(Style::default());
 
-    let title = Paragraph::new(Text::styled(
-        "Todoist",
-        Style::default().fg(Color::Green),
-    ))
-    .block(title_block.clone());
+    let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green)))
+        .block(title_block.clone());
 
     f.render_widget(title, chunks[0]);
 
     let mut list_items = Vec::<ListItem>::new();
 
     for project in &app.projects.projects {
-        list_items.push(ListItem::new(Line::from(Span::styled(format!("{}", project.name), Style::default().fg(Color::Yellow)))))
+        list_items.push(ListItem::new(Line::from(Span::styled(
+            format!("{}", project.name),
+            Style::default().fg(Color::Yellow),
+        ))))
     }
 
-    let list = List::new(list_items).block(title_block);
-    f.render_widget(list, inner_layout[0]);
+    let list = List::new(list_items)
+        .block(title_block)
+        .highlight_style(
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .add_modifier(Modifier::REVERSED)
+                .fg(Color::Cyan),
+        )
+        .highlight_symbol(">")
+        .highlight_spacing(HighlightSpacing::Always);
+    f.render_stateful_widget(list, inner_layout[0], &mut app.projects.state);
 }

@@ -17,10 +17,8 @@ pub enum CurrentScreen {
 pub struct App {
     pub current_screen: CurrentScreen,
     pub exit: bool,
-    pub projects: Projects
+    pub projects: Projects,
 }
-
-
 
 impl App {
     pub fn new() -> App {
@@ -32,7 +30,6 @@ impl App {
     }
 }
 
-
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     let mut terminal = tui::init()?;
@@ -43,25 +40,24 @@ async fn main() -> Result<(), std::io::Error> {
         let mut app = app_clone.lock().await;
         app.initialise().await;
     });
-    
 
     loop {
         let mut app = app.lock().await;
-        terminal.draw(|frame| {
-            tui::ui(frame, &mut app)
-        })?;
-        
+        terminal.draw(|frame| tui::ui(frame, &mut app))?;
+
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     if key.code == KeyCode::Char('q') {
                         break;
+                    } else if key.code == KeyCode::Char('a') {
+                        app.projects.next();
                     }
                 }
             }
         }
     }
-    tui::restore()?;    
+    tui::restore()?;
     let _ = initialise_task.await;
     Ok(())
 }
