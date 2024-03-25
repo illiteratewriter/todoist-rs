@@ -1,10 +1,12 @@
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
 use std::sync::Arc;
+use tasks::Tasks;
 use tokio::sync::Mutex;
 
 mod api_calls;
 mod projects;
+mod tasks;
 mod tui;
 
 #[derive(Debug, Default)]
@@ -17,7 +19,7 @@ pub enum CurrentScreen {
 pub enum CurrentFocus {
     #[default]
     Projects,
-    Tasks
+    Tasks,
 }
 
 #[derive(Debug, Default)]
@@ -25,7 +27,8 @@ pub struct App {
     pub current_screen: CurrentScreen,
     pub exit: bool,
     pub projects: Projects,
-    pub current_focus: CurrentFocus
+    pub current_focus: CurrentFocus,
+    pub tasks: Tasks,
 }
 
 impl App {
@@ -33,9 +36,9 @@ impl App {
         App::default()
     }
 
-    pub async fn initialise(&mut self) {
-        self.projects.initialise().await;
-    }
+    // pub async fn initialise(&mut self) {
+    //     self.projects.initialise().await;
+    // }
 }
 
 #[tokio::main]
@@ -45,10 +48,16 @@ async fn main() -> Result<(), std::io::Error> {
 
     let app_clone = Arc::clone(&app);
     let initialise_task = tokio::spawn(async move {
+        // todo: make network calls parallel
         let project_resp = api_calls::fetch_projects().await.unwrap();
         let projects = Projects::new(project_resp);
+        let task_resp = api_calls::fetch_tasks().await.unwrap();
+        let tasks = Tasks::new(task_resp);
         let mut app = app_clone.lock().await;
         app.projects = projects;
+        app.tasks = tasks;
+
+        // println!("APP {:?}", app);
     });
 
     loop {
@@ -66,10 +75,10 @@ async fn main() -> Result<(), std::io::Error> {
                     } else if key.code == KeyCode::Tab {
                         match app.current_focus {
                             CurrentFocus::Projects => app.current_focus = CurrentFocus::Tasks,
-                            CurrentFocus::Tasks => app.current_focus = CurrentFocus::Projects
+                            CurrentFocus::Tasks => app.current_focus = CurrentFocus::Projects,
                         }
                     }
-                    
+
                     if app.current_focus == CurrentFocus::Projects {
                         if key.code == KeyCode::Char('j') {
                             app.projects.next();
@@ -79,9 +88,16 @@ async fn main() -> Result<(), std::io::Error> {
                             println!("FROM HERE ");
                             app.projects.select().await;
                         }
+                    } else if app.current_focus == CurrentFocus::Tasks {
+                        if key.code == KeyCode::Char('j') {
+                            app.tasks.next();
+                        } else if key.code == KeyCode::Char('k') {
+                            app.tasks.previous();
+                        } else if key.code == KeyCode::Enter {
+                            println!("FROM HERE ");
+                            // app.tasks.select().await;
+                        }
                     }
-                    
-                    
                 }
             }
         }

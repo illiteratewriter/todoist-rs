@@ -57,9 +57,10 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     let my_projects_block = Block::default()
         .title(Title::from(" My projects ".bold()).alignment(Alignment::Left))
-        .borders(Borders::ALL).fg(match app.current_focus {
+        .borders(Borders::ALL)
+        .fg(match app.current_focus {
             CurrentFocus::Projects => Color::Green,
-            _ => Color::White
+            _ => Color::White,
         });
 
     let list = List::new(list_items)
@@ -73,4 +74,34 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);
     f.render_stateful_widget(list, inner_layout[0], &mut app.projects.state);
+
+    let tasks_block = Block::default()
+        .title(Title::from(" Tasks ".bold()).alignment(Alignment::Left))
+        .borders(Borders::ALL)
+        .fg(match app.current_focus {
+            CurrentFocus::Tasks => Color::Green,
+            _ => Color::White,
+        });
+
+    let mut task_items = Vec::<ListItem>::new();
+
+    for task in &app.tasks.tasks {
+        task_items.push(ListItem::new(Line::from(Span::styled(
+            format!("{}", task.content),
+            Style::default().fg(Color::Yellow),
+        ))))
+    }
+
+    let task_list = List::new(task_items)
+        .block(tasks_block)
+        .highlight_style(
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .add_modifier(Modifier::REVERSED)
+                .fg(Color::Cyan),
+        )
+        .highlight_symbol(">")
+        .highlight_spacing(HighlightSpacing::Always);
+
+    f.render_stateful_widget(task_list, inner_layout[1], &mut app.tasks.state);
 }

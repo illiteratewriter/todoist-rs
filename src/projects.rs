@@ -1,8 +1,6 @@
 use ratatui::widgets::ListState;
 use serde::{Deserialize, Serialize};
 
-use crate::api_calls::{self};
-
 #[derive(Debug, Default)]
 pub struct Projects {
     pub projects: Vec<Project>,
@@ -41,9 +39,9 @@ impl Projects {
         }
     }
 
-    pub async fn initialise(&mut self) {
-        self.projects = api_calls::fetch_projects().await.unwrap();
-    }
+    // pub async fn initialise(&mut self) {
+    //     self.projects = api_calls::fetch_projects().await.unwrap();
+    // }
 
     pub fn next(&mut self) {
         let i = match self.state.selected() {
@@ -80,8 +78,8 @@ impl Projects {
     }
 
     pub async fn select(&mut self) {
-        println!("AND FROM HERE");
         let i = self.state.selected().unwrap();
+
         // self.projects[i].get_sections();
     }
 
