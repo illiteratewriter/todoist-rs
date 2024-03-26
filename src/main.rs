@@ -57,6 +57,7 @@ async fn main() -> Result<(), std::io::Error> {
         app.projects = projects;
         app.tasks = tasks;
         app.tasks.filter_task_list();
+        app.tasks.find_tasks_with_children();
         // println!("APP {:?}", app);
     });
 

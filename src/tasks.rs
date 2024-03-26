@@ -1,4 +1,6 @@
 extern crate chrono;
+use std::collections::HashMap;
+
 use chrono::{Local, NaiveDate};
 use ratatui::{
     style::{Color, Style},
@@ -13,11 +15,12 @@ pub struct Tasks<'a> {
     pub filter: Filter,
     pub state: ListState,
     pub task_list: Vec<ListItem<'a>>,
+    pub tasks_with_children: HashMap<String, u16>
 }
 
-fn generate_list_item<'a>(content: &String) -> ListItem<'a> {
+fn generate_list_item<'a>(content: &String, children: u16) -> ListItem<'a> {
     ListItem::new(Line::from(Span::styled(
-        format!("{}", content),
+        format!("{} {}", content, children),
         Style::default().fg(Color::Yellow),
     )))
 }
@@ -29,6 +32,15 @@ impl<'a> Tasks<'a> {
             filter: Filter::Today,
             state: ListState::default(),
             task_list: Vec::<ListItem>::new(),
+            tasks_with_children: HashMap::new()
+        }
+    }
+
+    pub fn find_tasks_with_children(&mut self) {
+        for task in &self.tasks {
+            if let Some(parent_id) = &task.parent_id {
+                *self.tasks_with_children.entry(parent_id.clone()).or_insert(0) += 1;
+            }
         }
     }
 
@@ -36,21 +48,22 @@ impl<'a> Tasks<'a> {
         self.task_list = Vec::<ListItem>::new();
         self.state = ListState::default();
         for task in &self.tasks {
+            let children: u16 = *self.tasks_with_children.get(&task.id).unwrap_or(&0);
             match &self.filter {
                 Filter::All => {
-                    self.task_list.push(generate_list_item(&task.content));
+                    self.task_list.push(generate_list_item(&task.content, children));
                 }
                 Filter::Today => {
                     let today = Local::now().date_naive();
                     if let Some(due) = &task.due {
                         if due.date == today {
-                            self.task_list.push(generate_list_item(&task.content));
+                            self.task_list.push(generate_list_item(&task.content, children));
                         }
                     }
                 }
                 Filter::ProjectId(project_id) => {
                     if task.project_id == *project_id {
-                        self.task_list.push(generate_list_item(&task.content));
+                        self.task_list.push(generate_list_item(&task.content, children));
                     }
                 }
             }
