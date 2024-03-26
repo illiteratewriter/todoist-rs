@@ -3,7 +3,7 @@ use std::io::{self, stdout, Stdout};
 use crossterm::{execute, terminal::*};
 use ratatui::{
     prelude::*,
-    widgets::{block::Title, Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
+    widgets::{block::{Position, Title}, Block, Borders, Clear, HighlightSpacing, List, ListItem, Paragraph},
 };
 
 use crate::{tasks::Filter, App, CurrentFocus};
@@ -89,8 +89,14 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         Filter::ProjectId(_) => { " Tasks " }
     };
 
+    let instructions = Title::from(Line::from(vec![
+        " For help, press ".into(),
+        "h ".blue().bold()
+    ]));
+
     let tasks_block = Block::default()
         .title(Title::from(task_title.bold()).alignment(Alignment::Left))
+        .title(instructions.alignment(Alignment::Center).position(Position::Bottom))
         .borders(Borders::ALL)
         .fg(match app.current_focus {
             CurrentFocus::Tasks => Color::Green,
@@ -109,4 +115,31 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .highlight_spacing(HighlightSpacing::Always);
 
     f.render_stateful_widget(task_list, inner_layout[1], &mut app.tasks.state);
+
+
+    // help popup
+    if app.show_help {
+        let block = Block::default().title(" Help ").borders(Borders::ALL);
+        let area = centered_rect(60, 20, f.size());
+        let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green)))
+            .block(block);
+        f.render_widget(Clear, area); //this clears out the background
+        f.render_widget(title, area);
+    }
+}
+
+fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    let popup_layout = Layout::vertical([
+        Constraint::Percentage((100 - percent_y) / 2),
+        Constraint::Percentage(percent_y),
+        Constraint::Percentage((100 - percent_y) / 2),
+    ])
+    .split(r);
+
+    Layout::horizontal([
+        Constraint::Percentage((100 - percent_x) / 2),
+        Constraint::Percentage(percent_x),
+        Constraint::Percentage((100 - percent_x) / 2),
+    ])
+    .split(popup_layout[1])[1]
 }

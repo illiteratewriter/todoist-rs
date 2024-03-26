@@ -1,5 +1,6 @@
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
+use sections::Sections;
 use std::sync::Arc;
 use tasks::Tasks;
 use tokio::sync::Mutex;
@@ -8,6 +9,7 @@ mod api_calls;
 mod projects;
 mod tasks;
 mod tui;
+mod sections;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -20,6 +22,7 @@ pub enum CurrentFocus {
     #[default]
     Projects,
     Tasks,
+    Help
 }
 
 #[derive(Debug, Default)]
@@ -29,6 +32,8 @@ pub struct App<'a> {
     pub projects: Projects,
     pub current_focus: CurrentFocus,
     pub tasks: Tasks<'a>,
+    pub show_help: bool,
+    pub sections: Sections
 }
 
 impl<'a> App<'a> {
@@ -54,11 +59,13 @@ async fn main() -> Result<(), std::io::Error> {
         let task_resp = api_calls::fetch_tasks().await.unwrap();
         let tasks = Tasks::new(task_resp);
         let mut app = app_clone.lock().await;
+        let sections_resp = api_calls::fetch_sections().await.unwrap();
+        let sections = Sections::new(sections_resp);
         app.projects = projects;
         app.tasks = tasks;
+        app.sections = sections;
         app.tasks.filter_task_list();
         app.tasks.find_tasks_with_children();
-        // println!("APP {:?}", app);
     });
 
     loop {
@@ -68,15 +75,21 @@ async fn main() -> Result<(), std::io::Error> {
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
-                    if key.code == KeyCode::Char('t') {
-                        println!("T was pressed");
-                    }
-                    if key.code == KeyCode::Char('q') {
+                    if key.code == KeyCode::Char('h') {
+                       app.show_help = !app.show_help;
+                    } else if key.code == KeyCode::Char('q') {
                         break;
-                    } else if key.code == KeyCode::Tab {
+                    } 
+                    
+                    if app.show_help {
+                        continue;
+                    }
+                    
+                    if key.code == KeyCode::Tab {
                         match app.current_focus {
                             CurrentFocus::Projects => app.current_focus = CurrentFocus::Tasks,
                             CurrentFocus::Tasks => app.current_focus = CurrentFocus::Projects,
+                            _ => {}
                         }
                     }
 
