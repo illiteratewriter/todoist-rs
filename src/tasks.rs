@@ -18,9 +18,9 @@ pub struct Tasks<'a> {
     pub tasks_with_children: HashMap<String, u16>
 }
 
-fn generate_list_item<'a>(content: &String, children: u16) -> ListItem<'a> {
+fn generate_list_item<'a>(content: &String, is_completed: bool, children: u16) -> ListItem<'a> {
     ListItem::new(Line::from(Span::styled(
-        format!("{} {}", content, children),
+        format!("[{}] {} {}", if is_completed { "✓" } else { " " }, if children > 0 { "⤷" } else {" "}, content),
         Style::default().fg(Color::Yellow),
     )))
 }
@@ -49,21 +49,22 @@ impl<'a> Tasks<'a> {
         self.state = ListState::default();
         for task in &self.tasks {
             let children: u16 = *self.tasks_with_children.get(&task.id).unwrap_or(&0);
+            
             match &self.filter {
                 Filter::All => {
-                    self.task_list.push(generate_list_item(&task.content, children));
+                    self.task_list.push(generate_list_item(&task.content, task.is_completed, children));
                 }
                 Filter::Today => {
                     let today = Local::now().date_naive();
                     if let Some(due) = &task.due {
                         if due.date == today {
-                            self.task_list.push(generate_list_item(&task.content, children));
+                            self.task_list.push(generate_list_item(&task.content, task.is_completed, children));
                         }
                     }
                 }
                 Filter::ProjectId(project_id) => {
                     if task.project_id == *project_id {
-                        self.task_list.push(generate_list_item(&task.content, children));
+                        self.task_list.push(generate_list_item(&task.content, task.is_completed, children));
                     }
                 }
             }

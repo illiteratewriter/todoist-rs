@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{block::Title, Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
 };
 
-use crate::{App, CurrentFocus};
+use crate::{tasks::Filter, App, CurrentFocus};
 
 pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
@@ -74,9 +74,15 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);
     f.render_stateful_widget(list, inner_layout[0], &mut app.projects.state);
+    
+    let task_title = match app.tasks.filter {
+        Filter::All => { " All " },
+        Filter::Today => { " Today "},
+        Filter::ProjectId(_) => { " Tasks " }
+    };
 
     let tasks_block = Block::default()
-        .title(Title::from(" Tasks ".bold()).alignment(Alignment::Left))
+        .title(Title::from(task_title.bold()).alignment(Alignment::Left))
         .borders(Borders::ALL)
         .fg(match app.current_focus {
             CurrentFocus::Tasks => Color::Green,
