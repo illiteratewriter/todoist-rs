@@ -23,16 +23,16 @@ pub enum CurrentFocus {
 }
 
 #[derive(Debug, Default)]
-pub struct App {
+pub struct App<'a> {
     pub current_screen: CurrentScreen,
     pub exit: bool,
     pub projects: Projects,
     pub current_focus: CurrentFocus,
-    pub tasks: Tasks,
+    pub tasks: Tasks<'a>,
 }
 
-impl App {
-    pub fn new() -> App {
+impl<'a> App<'a> {
+    pub fn new() -> App<'a> {
         App::default()
     }
 
@@ -56,7 +56,7 @@ async fn main() -> Result<(), std::io::Error> {
         let mut app = app_clone.lock().await;
         app.projects = projects;
         app.tasks = tasks;
-
+        app.tasks.filter_task_list();
         // println!("APP {:?}", app);
     });
 
@@ -85,8 +85,10 @@ async fn main() -> Result<(), std::io::Error> {
                         } else if key.code == KeyCode::Char('k') {
                             app.projects.previous();
                         } else if key.code == KeyCode::Enter {
-                            println!("FROM HERE ");
-                            app.projects.select().await;
+                            if let Some(selected) = app.projects.state.selected() {
+                                app.tasks.filter = crate::tasks::Filter::ProjectId(app.projects.projects[selected].id.clone());
+                                app.tasks.filter_task_list();
+                            }
                         }
                     } else if app.current_focus == CurrentFocus::Tasks {
                         if key.code == KeyCode::Char('j') {

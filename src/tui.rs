@@ -83,16 +83,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             _ => Color::White,
         });
 
-    let mut task_items = Vec::<ListItem>::new();
-
-    for task in &app.tasks.tasks {
-        task_items.push(ListItem::new(Line::from(Span::styled(
-            format!("{}", task.content),
-            Style::default().fg(Color::Yellow),
-        ))))
-    }
-
-    let task_list = List::new(task_items)
+    let task_list = List::new(app.tasks.task_list.clone())
         .block(tasks_block)
         .highlight_style(
             Style::default()

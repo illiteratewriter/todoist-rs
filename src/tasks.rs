@@ -1,28 +1,66 @@
 extern crate chrono;
-use chrono::NaiveDate;
-use ratatui::widgets::ListState;
+use chrono::{Local, NaiveDate};
+use ratatui::{
+    style::{Color, Style},
+    text::{Line, Span},
+    widgets::{ListItem, ListState},
+};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Default)]
-pub struct Tasks {
+pub struct Tasks<'a> {
     pub tasks: Vec<Task>,
     pub filter: Filter,
     pub state: ListState,
+    pub task_list: Vec<ListItem<'a>>,
 }
 
-impl Tasks {
-    pub fn new(items: Vec<Task>) -> Tasks {
+fn generate_list_item<'a>(content: &String) -> ListItem<'a> {
+    ListItem::new(Line::from(Span::styled(
+        format!("{}", content),
+        Style::default().fg(Color::Yellow),
+    )))
+}
+
+impl<'a> Tasks<'a> {
+    pub fn new(items: Vec<Task>) -> Tasks<'a> {
         Tasks {
             tasks: items,
-            filter: Filter::All,
+            filter: Filter::Today,
             state: ListState::default(),
+            task_list: Vec::<ListItem>::new(),
+        }
+    }
+
+    pub fn filter_task_list(&mut self) {
+        self.task_list = Vec::<ListItem>::new();
+        self.state = ListState::default();
+        for task in &self.tasks {
+            match &self.filter {
+                Filter::All => {
+                    self.task_list.push(generate_list_item(&task.content));
+                }
+                Filter::Today => {
+                    let today = Local::now().date_naive();
+                    if let Some(due) = &task.due {
+                        if due.date == today {
+                            self.task_list.push(generate_list_item(&task.content));
+                        }
+                    }
+                }
+                Filter::ProjectId(project_id) => {
+                    if task.project_id == *project_id {
+                        self.task_list.push(generate_list_item(&task.content));
+                    }
+                }
+            }
         }
     }
 
     pub fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.tasks.len() - 1 {
+                if i >= self.task_list.len() - 1 {
                     0
                 } else {
                     i + 1
@@ -37,7 +75,7 @@ impl Tasks {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.tasks.len() - 1
+                    self.task_list.len() - 1
                 } else {
                     i - 1
                 }
@@ -86,12 +124,12 @@ pub struct Task {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Due {
-    string: String,
+    pub string: String,
     #[serde(with = "date_format")]
-    date: NaiveDate,
-    is_recurring: bool,
-    datetime: Option<String>,
-    timezone: Option<String>,
+    pub date: NaiveDate,
+    pub is_recurring: bool,
+    pub datetime: Option<String>,
+    pub timezone: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
