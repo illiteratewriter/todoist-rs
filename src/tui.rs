@@ -49,10 +49,20 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let mut list_items = Vec::<ListItem>::new();
 
     for project in &app.projects.projects {
+        let color = if let Some(selected_project) = &app.projects.selected_project {
+            if project.id == *selected_project {
+                Color::Red
+            } else {
+                Color::Yellow
+            }
+        } else {
+            Color::Yellow
+        };
+        
         list_items.push(ListItem::new(Line::from(Span::styled(
             format!("{}", project.name),
-            Style::default().fg(Color::Yellow),
-        ))))
+            Style::default().fg(color),
+        ))));
     }
 
     let my_projects_block = Block::default()
@@ -68,8 +78,6 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .highlight_style(
             Style::default()
                 .add_modifier(Modifier::BOLD)
-                .add_modifier(Modifier::REVERSED)
-                .fg(Color::Cyan),
         )
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);

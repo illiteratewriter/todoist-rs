@@ -87,8 +87,10 @@ async fn main() -> Result<(), std::io::Error> {
                             app.projects.previous();
                         } else if key.code == KeyCode::Enter {
                             if let Some(selected) = app.projects.state.selected() {
-                                app.tasks.filter = crate::tasks::Filter::ProjectId(app.projects.projects[selected].id.clone());
+                                let selected_id = app.projects.projects[selected].id.clone();
+                                app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
                                 app.tasks.filter_task_list();
+                                app.projects.selected_project = Some(selected_id);
                             }
                         }
                     } else if app.current_focus == CurrentFocus::Tasks {

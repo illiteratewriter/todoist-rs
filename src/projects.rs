@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct Projects {
     pub projects: Vec<Project>,
     pub state: ListState,
+    pub selected_project: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,6 +37,7 @@ impl Projects {
         Projects {
             projects: items,
             state: ListState::default(),
+            selected_project: None
         }
     }
 
@@ -75,12 +77,6 @@ impl Projects {
         let offset = self.state.offset();
         self.state.select(None);
         *self.state.offset_mut() = offset;
-    }
-
-    pub async fn select(&mut self) {
-        let i = self.state.selected().unwrap();
-
-        // self.projects[i].get_sections();
     }
 
     pub fn get_sections(&mut self) {
