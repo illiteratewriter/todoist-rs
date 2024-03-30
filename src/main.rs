@@ -2,7 +2,7 @@ use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
 use sections::Sections;
 use std::sync::Arc;
-use tasks::Tasks;
+use tasks::{Filter, Tasks};
 use tokio::sync::Mutex;
 
 mod api_calls;
@@ -79,6 +79,9 @@ async fn main() -> Result<(), std::io::Error> {
                         app.show_help = !app.show_help;
                     } else if key.code == KeyCode::Char('q') {
                         break;
+                    } else if key.code == KeyCode::Char('t') {
+                        app.tasks.filter = Filter::Today;
+                        app.tasks.filter_task_list();
                     }
 
                     if app.show_help {

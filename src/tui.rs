@@ -5,9 +5,12 @@ use ratatui::{
     prelude::*,
     widgets::{
         block::{Position, Title},
-        Block, Borders, Clear, HighlightSpacing, List, ListItem, Paragraph,
+        Block, Borders, HighlightSpacing, List, ListItem, Paragraph,
     },
 };
+
+mod help;
+mod utils;
 
 use crate::{tasks::Filter, App, CurrentFocus};
 
@@ -122,43 +125,6 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     // help popup
     if app.show_help {
-        help(f);
+        help::help(f);
     }
-}
-
-fn help(f: &mut Frame) {
-    let close_help = Title::from(Line::from(vec![
-        " To close, press ".into(),
-        "h".blue().bold(),
-        " again ".into(),
-    ]));
-    let block = Block::default()
-        .title(" Help ")
-        .title(
-            close_help
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
-        .borders(Borders::ALL);
-    let area = centered_rect(60, 20, f.size());
-    let title =
-        Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green))).block(block);
-    f.render_widget(Clear, area); //this clears out the background
-    f.render_widget(title, area);
-}
-
-fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    let popup_layout = Layout::vertical([
-        Constraint::Percentage((100 - percent_y) / 2),
-        Constraint::Percentage(percent_y),
-        Constraint::Percentage((100 - percent_y) / 2),
-    ])
-    .split(r);
-
-    Layout::horizontal([
-        Constraint::Percentage((100 - percent_x) / 2),
-        Constraint::Percentage(percent_x),
-        Constraint::Percentage((100 - percent_x) / 2),
-    ])
-    .split(popup_layout[1])[1]
 }
