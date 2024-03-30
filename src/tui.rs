@@ -90,6 +90,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         Filter::All => " All ",
         Filter::Today => " Today ",
         Filter::ProjectId(_) => " Tasks ",
+        Filter::Overdue => " Overdue "
     };
 
     let instructions = Title::from(Line::from(vec![

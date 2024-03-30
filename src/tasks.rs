@@ -87,6 +87,18 @@ impl<'a> Tasks<'a> {
                         ));
                     }
                 }
+                Filter::Overdue => {
+                    let today = Local::now().date_naive();
+                    if let Some(due) = &task.due {
+                        if due.date < today {
+                            self.task_list.push(generate_list_item(
+                                &task.content,
+                                task.is_completed,
+                                children,
+                            ));
+                        }
+                    }
+                }
             }
         }
     }
@@ -131,6 +143,7 @@ pub enum Filter {
     #[default]
     All,
     Today,
+    Overdue,
     ProjectId(String),
 }
 

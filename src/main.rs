@@ -82,6 +82,11 @@ async fn main() -> Result<(), std::io::Error> {
                     } else if key.code == KeyCode::Char('t') {
                         app.tasks.filter = Filter::Today;
                         app.tasks.filter_task_list();
+                        app.projects.unselect();
+                    }else if key.code == KeyCode::Char('o') {
+                        app.tasks.filter = Filter::Overdue;
+                        app.tasks.filter_task_list();
+                        app.projects.unselect();
                     }
 
                     if app.show_help {
