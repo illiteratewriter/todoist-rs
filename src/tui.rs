@@ -3,7 +3,10 @@ use std::io::{self, stdout, Stdout};
 use crossterm::{execute, terminal::*};
 use ratatui::{
     prelude::*,
-    widgets::{block::{Position, Title}, Block, Borders, Clear, HighlightSpacing, List, ListItem, Paragraph},
+    widgets::{
+        block::{Position, Title},
+        Block, Borders, Clear, HighlightSpacing, List, ListItem, Paragraph,
+    },
 };
 
 use crate::{tasks::Filter, App, CurrentFocus};
@@ -58,7 +61,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         } else {
             Color::Yellow
         };
-        
+
         list_items.push(ListItem::new(Line::from(Span::styled(
             format!("{}", project.name),
             Style::default().fg(color),
@@ -75,28 +78,29 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     let list = List::new(list_items)
         .block(my_projects_block)
-        .highlight_style(
-            Style::default()
-                .add_modifier(Modifier::BOLD)
-        )
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);
     f.render_stateful_widget(list, inner_layout[0], &mut app.projects.state);
-    
+
     let task_title = match app.tasks.filter {
-        Filter::All => { " All " },
-        Filter::Today => { " Today "},
-        Filter::ProjectId(_) => { " Tasks " }
+        Filter::All => " All ",
+        Filter::Today => " Today ",
+        Filter::ProjectId(_) => " Tasks ",
     };
 
     let instructions = Title::from(Line::from(vec![
         " For help, press ".into(),
-        "h ".blue().bold()
+        "h ".blue().bold(),
     ]));
 
     let tasks_block = Block::default()
         .title(Title::from(task_title.bold()).alignment(Alignment::Left))
-        .title(instructions.alignment(Alignment::Center).position(Position::Bottom))
+        .title(
+            instructions
+                .alignment(Alignment::Center)
+                .position(Position::Bottom),
+        )
         .borders(Borders::ALL)
         .fg(match app.current_focus {
             CurrentFocus::Tasks => Color::Green,
@@ -116,13 +120,12 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     f.render_stateful_widget(task_list, inner_layout[1], &mut app.tasks.state);
 
-
     // help popup
     if app.show_help {
         let block = Block::default().title(" Help ").borders(Borders::ALL);
         let area = centered_rect(60, 20, f.size());
-        let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green)))
-            .block(block);
+        let title =
+            Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green))).block(block);
         f.render_widget(Clear, area); //this clears out the background
         f.render_widget(title, area);
     }

@@ -7,9 +7,9 @@ use tokio::sync::Mutex;
 
 mod api_calls;
 mod projects;
+mod sections;
 mod tasks;
 mod tui;
-mod sections;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -22,7 +22,7 @@ pub enum CurrentFocus {
     #[default]
     Projects,
     Tasks,
-    Help
+    Help,
 }
 
 #[derive(Debug, Default)]
@@ -33,7 +33,7 @@ pub struct App<'a> {
     pub current_focus: CurrentFocus,
     pub tasks: Tasks<'a>,
     pub show_help: bool,
-    pub sections: Sections
+    pub sections: Sections,
 }
 
 impl<'a> App<'a> {
@@ -76,15 +76,15 @@ async fn main() -> Result<(), std::io::Error> {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     if key.code == KeyCode::Char('h') {
-                       app.show_help = !app.show_help;
+                        app.show_help = !app.show_help;
                     } else if key.code == KeyCode::Char('q') {
                         break;
-                    } 
-                    
+                    }
+
                     if app.show_help {
                         continue;
                     }
-                    
+
                     if key.code == KeyCode::Tab {
                         match app.current_focus {
                             CurrentFocus::Projects => app.current_focus = CurrentFocus::Tasks,
@@ -101,7 +101,8 @@ async fn main() -> Result<(), std::io::Error> {
                         } else if key.code == KeyCode::Enter {
                             if let Some(selected) = app.projects.state.selected() {
                                 let selected_id = app.projects.projects[selected].id.clone();
-                                app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
+                                app.tasks.filter =
+                                    crate::tasks::Filter::ProjectId(selected_id.clone());
                                 app.tasks.filter_task_list();
                                 app.projects.selected_project = Some(selected_id);
                             }

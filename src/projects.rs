@@ -37,7 +37,7 @@ impl Projects {
         Projects {
             projects: items,
             state: ListState::default(),
-            selected_project: None
+            selected_project: None,
         }
     }
 
