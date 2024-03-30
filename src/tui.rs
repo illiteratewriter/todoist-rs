@@ -122,13 +122,29 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     // help popup
     if app.show_help {
-        let block = Block::default().title(" Help ").borders(Borders::ALL);
-        let area = centered_rect(60, 20, f.size());
-        let title =
-            Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green))).block(block);
-        f.render_widget(Clear, area); //this clears out the background
-        f.render_widget(title, area);
+        help(f);
     }
+}
+
+fn help(f: &mut Frame) {
+    let close_help = Title::from(Line::from(vec![
+        " To close, press ".into(),
+        "h".blue().bold(),
+        " again ".into(),
+    ]));
+    let block = Block::default()
+        .title(" Help ")
+        .title(
+            close_help
+                .alignment(Alignment::Center)
+                .position(Position::Bottom),
+        )
+        .borders(Borders::ALL);
+    let area = centered_rect(60, 20, f.size());
+    let title =
+        Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green))).block(block);
+    f.render_widget(Clear, area); //this clears out the background
+    f.render_widget(title, area);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
