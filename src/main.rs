@@ -26,18 +26,18 @@ pub enum CurrentFocus {
 }
 
 #[derive(Debug, Default)]
-pub struct App<'a> {
+pub struct App {
     pub current_screen: CurrentScreen,
     pub exit: bool,
     pub projects: Projects,
     pub current_focus: CurrentFocus,
-    pub tasks: Tasks<'a>,
+    pub tasks: Tasks,
     pub show_help: bool,
     pub sections: Sections,
 }
 
-impl<'a> App<'a> {
-    pub fn new() -> App<'a> {
+impl App {
+    pub fn new() -> App {
         App::default()
     }
 
@@ -83,7 +83,7 @@ async fn main() -> Result<(), std::io::Error> {
                         app.tasks.filter = Filter::Today;
                         app.tasks.filter_task_list();
                         app.projects.unselect();
-                    }else if key.code == KeyCode::Char('o') {
+                    } else if key.code == KeyCode::Char('o') {
                         app.tasks.filter = Filter::Overdue;
                         app.tasks.filter_task_list();
                         app.projects.unselect();

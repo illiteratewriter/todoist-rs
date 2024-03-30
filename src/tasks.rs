@@ -2,42 +2,26 @@ extern crate chrono;
 use std::collections::HashMap;
 
 use chrono::{Local, NaiveDate};
-use ratatui::{
-    style::{Color, Style},
-    text::{Line, Span},
-    widgets::{ListItem, ListState},
-};
+use ratatui::widgets::ListState;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Default)]
-pub struct Tasks<'a> {
+pub struct Tasks {
     pub tasks: Vec<Task>,
     pub filter: Filter,
     pub state: ListState,
-    pub task_list: Vec<ListItem<'a>>,
     pub tasks_with_children: HashMap<String, u16>,
+    pub display_tasks: Vec<usize>,
 }
 
-fn generate_list_item<'a>(content: &String, is_completed: bool, children: u16) -> ListItem<'a> {
-    ListItem::new(Line::from(Span::styled(
-        format!(
-            "[{}] {} {}",
-            if is_completed { "✓" } else { " " },
-            if children > 0 { "⤷" } else { " " },
-            content
-        ),
-        Style::default().fg(Color::Yellow),
-    )))
-}
-
-impl<'a> Tasks<'a> {
-    pub fn new(items: Vec<Task>) -> Tasks<'a> {
+impl Tasks {
+    pub fn new(items: Vec<Task>) -> Tasks {
         Tasks {
             tasks: items,
             filter: Filter::Today,
             state: ListState::default(),
-            task_list: Vec::<ListItem>::new(),
             tasks_with_children: HashMap::new(),
+            display_tasks: Vec::new(),
         }
     }
 
@@ -53,49 +37,31 @@ impl<'a> Tasks<'a> {
     }
 
     pub fn filter_task_list(&mut self) {
-        self.task_list = Vec::<ListItem>::new();
         self.state = ListState::default();
-        for task in &self.tasks {
-            let children: u16 = *self.tasks_with_children.get(&task.id).unwrap_or(&0);
-
+        self.display_tasks = Vec::new();
+        for (index, task) in self.tasks.iter().enumerate() {
             match &self.filter {
                 Filter::All => {
-                    self.task_list.push(generate_list_item(
-                        &task.content,
-                        task.is_completed,
-                        children,
-                    ));
+                    self.display_tasks.push(index);
                 }
                 Filter::Today => {
                     let today = Local::now().date_naive();
                     if let Some(due) = &task.due {
                         if due.date == today {
-                            self.task_list.push(generate_list_item(
-                                &task.content,
-                                task.is_completed,
-                                children,
-                            ));
+                            self.display_tasks.push(index);
                         }
                     }
                 }
                 Filter::ProjectId(project_id) => {
                     if task.project_id == *project_id {
-                        self.task_list.push(generate_list_item(
-                            &task.content,
-                            task.is_completed,
-                            children,
-                        ));
+                        self.display_tasks.push(index);
                     }
                 }
                 Filter::Overdue => {
                     let today = Local::now().date_naive();
                     if let Some(due) = &task.due {
                         if due.date < today {
-                            self.task_list.push(generate_list_item(
-                                &task.content,
-                                task.is_completed,
-                                children,
-                            ));
+                            self.display_tasks.push(index);
                         }
                     }
                 }
@@ -106,7 +72,7 @@ impl<'a> Tasks<'a> {
     pub fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.task_list.len() - 1 {
+                if i >= self.display_tasks.len() - 1 {
                     0
                 } else {
                     i + 1
@@ -121,7 +87,7 @@ impl<'a> Tasks<'a> {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.task_list.len() - 1
+                    self.display_tasks.len() - 1
                 } else {
                     i - 1
                 }

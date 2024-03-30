@@ -90,7 +90,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         Filter::All => " All ",
         Filter::Today => " Today ",
         Filter::ProjectId(_) => " Tasks ",
-        Filter::Overdue => " Overdue "
+        Filter::Overdue => " Overdue ",
     };
 
     let instructions = Title::from(Line::from(vec![
@@ -111,7 +111,18 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             _ => Color::White,
         });
 
-    let task_list = List::new(app.tasks.task_list.clone())
+    let mut task_list_item = Vec::new();
+    for i in &app.tasks.display_tasks {
+        let task = &app.tasks.tasks[*i];
+        let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
+        task_list_item.push(generate_list_item(
+            &task.content,
+            task.is_completed,
+            children,
+        ))
+    }
+
+    let task_list = List::new(task_list_item)
         .block(tasks_block)
         .highlight_style(
             Style::default()
@@ -128,4 +139,16 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     if app.show_help {
         help::help(f);
     }
+}
+
+fn generate_list_item<'a>(content: &String, is_completed: bool, children: u16) -> ListItem<'a> {
+    ListItem::new(Line::from(Span::styled(
+        format!(
+            "[{}] {} {}",
+            if is_completed { "✓" } else { " " },
+            if children > 0 { "⤷" } else { " " },
+            content
+        ),
+        Style::default().fg(Color::Yellow),
+    )))
 }
