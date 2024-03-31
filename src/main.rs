@@ -1,9 +1,11 @@
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
+use ratatui::text::Text;
 use sections::Sections;
-use std::sync::Arc;
+use std::{default, sync::Arc};
 use tasks::{Filter, Tasks};
 use tokio::sync::Mutex;
+use tui_textarea::TextArea;
 
 mod api_calls;
 mod projects;
@@ -26,7 +28,7 @@ pub enum CurrentFocus {
 }
 
 #[derive(Debug, Default)]
-pub struct App {
+pub struct App<'a> {
     pub current_screen: CurrentScreen,
     pub exit: bool,
     pub projects: Projects,
@@ -34,17 +36,28 @@ pub struct App {
     pub tasks: Tasks,
     pub show_help: bool,
     pub sections: Sections,
-    pub show_task_editor: bool
+    pub show_task_editor: bool,
+    pub task_edit: TaskEdit<'a>,
 }
 
-impl App {
-    pub fn new() -> App {
+#[derive(Debug, Default, Clone)]
+pub struct TaskEdit<'a> {
+    pub content: TextArea<'a>,
+    pub description: TextArea<'a>,
+    pub currently_editing: CurrentlyEditing,
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub enum CurrentlyEditing {
+    #[default]
+    Content,
+    Description,
+}
+
+impl<'a> App<'a> {
+    pub fn new() -> App<'a> {
         App::default()
     }
-
-    // pub async fn initialise(&mut self) {
-    //     self.projects.initialise().await;
-    // }
 }
 
 #[tokio::main]
@@ -76,6 +89,27 @@ async fn main() -> Result<(), std::io::Error> {
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
+                    if app.show_task_editor {
+                        if key.code == KeyCode::Esc {
+                            app.show_task_editor = !app.show_task_editor
+                        }
+                        if key.code == KeyCode::Tab {
+                            if app.task_edit.currently_editing == CurrentlyEditing::Content {
+                                app.task_edit.currently_editing = CurrentlyEditing::Description
+                            } else {
+                                app.task_edit.currently_editing = CurrentlyEditing::Content
+                            }
+                            continue;
+                        }
+
+                        if app.task_edit.currently_editing == CurrentlyEditing::Content {
+                            app.task_edit.content.input(key);
+                        } else {
+                            app.task_edit.description.input(key);
+                        }
+                        continue;
+                    }
+
                     if key.code == KeyCode::Char('h') {
                         app.show_help = !app.show_help;
                     } else if key.code == KeyCode::Char('q') {
@@ -88,10 +122,6 @@ async fn main() -> Result<(), std::io::Error> {
                         app.tasks.filter = Filter::Overdue;
                         app.tasks.filter_task_list();
                         app.projects.unselect();
-                    }
-
-                    if app.show_task_editor && key.code == KeyCode::Esc {
-                        app.show_task_editor = !app.show_task_editor
                     }
 
                     if app.show_help {
@@ -126,7 +156,17 @@ async fn main() -> Result<(), std::io::Error> {
                         } else if key.code == KeyCode::Char('k') {
                             app.tasks.previous();
                         } else if key.code == KeyCode::Enter {
-                            app.show_task_editor = true;
+                            if let Some(selected) = app.tasks.state.selected() {
+                                app.show_task_editor = true;
+                                let index = app.tasks.display_tasks[selected];
+                                let selected = &app.tasks.tasks[index];
+
+                                app.task_edit = TaskEdit {
+                                    content: TextArea::from(vec![selected.content.clone()]),
+                                    description: TextArea::from(vec![selected.description.clone()]),
+                                    currently_editing: CurrentlyEditing::Content,
+                                }
+                            }
                             // app.tasks.select().await;
                         }
                     }

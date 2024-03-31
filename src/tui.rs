@@ -10,8 +10,8 @@ use ratatui::{
 };
 
 mod help;
-mod utils;
 mod task_editor;
+mod utils;
 
 use crate::{tasks::Filter, App, CurrentFocus};
 
