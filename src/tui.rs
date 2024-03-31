@@ -116,7 +116,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     for i in &app.tasks.display_tasks {
         let task = &app.tasks.tasks[*i];
         let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
-        task_list_item.push(generate_list_item(
+        task_list_item.push(utils::generate_list_item(
             &task.content,
             task.is_completed,
             children,
@@ -144,16 +144,4 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     if app.show_task_editor {
         task_editor::editor(f, app)
     }
-}
-
-fn generate_list_item<'a>(content: &String, is_completed: bool, children: u16) -> ListItem<'a> {
-    ListItem::new(Line::from(Span::styled(
-        format!(
-            "[{}] {} {}",
-            if is_completed { "✓" } else { " " },
-            if children > 0 { "⤷" } else { " " },
-            content
-        ),
-        Style::default().fg(Color::Yellow),
-    )))
 }

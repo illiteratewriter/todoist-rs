@@ -1,8 +1,8 @@
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
-use ratatui::text::Text;
+use ratatui::widgets::ListState;
 use sections::Sections;
-use std::{default, sync::Arc};
+use std::sync::Arc;
 use tasks::{Filter, Tasks};
 use tokio::sync::Mutex;
 use tui_textarea::TextArea;
@@ -45,6 +45,8 @@ pub struct TaskEdit<'a> {
     pub content: TextArea<'a>,
     pub description: TextArea<'a>,
     pub currently_editing: CurrentlyEditing,
+    pub children: Vec<usize>,
+    pub children_list_state: ListState,
 }
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -161,10 +163,20 @@ async fn main() -> Result<(), std::io::Error> {
                                 let index = app.tasks.display_tasks[selected];
                                 let selected = &app.tasks.tasks[index];
 
+                                let mut children = Vec::new();
+
+                                for (index, task) in app.tasks.tasks.iter().enumerate() {
+                                    if task.parent_id == Some(selected.id.clone()) {
+                                        children.push(index);
+                                    }
+                                }
+
                                 app.task_edit = TaskEdit {
                                     content: TextArea::from(vec![selected.content.clone()]),
                                     description: TextArea::from(vec![selected.description.clone()]),
                                     currently_editing: CurrentlyEditing::Content,
+                                    children: children,
+                                    children_list_state: ListState::default(),
                                 }
                             }
                             // app.tasks.select().await;
