@@ -34,6 +34,7 @@ pub struct App {
     pub tasks: Tasks,
     pub show_help: bool,
     pub sections: Sections,
+    pub show_task_editor: bool
 }
 
 impl App {
@@ -89,6 +90,10 @@ async fn main() -> Result<(), std::io::Error> {
                         app.projects.unselect();
                     }
 
+                    if app.show_task_editor && key.code == KeyCode::Esc {
+                        app.show_task_editor = !app.show_task_editor
+                    }
+
                     if app.show_help {
                         continue;
                     }
@@ -121,7 +126,7 @@ async fn main() -> Result<(), std::io::Error> {
                         } else if key.code == KeyCode::Char('k') {
                             app.tasks.previous();
                         } else if key.code == KeyCode::Enter {
-                            println!("FROM HERE ");
+                            app.show_task_editor = true;
                             // app.tasks.select().await;
                         }
                     }

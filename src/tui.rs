@@ -11,6 +11,7 @@ use ratatui::{
 
 mod help;
 mod utils;
+mod task_editor;
 
 use crate::{tasks::Filter, App, CurrentFocus};
 
@@ -138,6 +139,10 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     // help popup
     if app.show_help {
         help::help(f);
+    }
+
+    if app.show_task_editor {
+        task_editor::editor(f, app)
     }
 }
 
