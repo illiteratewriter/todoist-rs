@@ -6,12 +6,14 @@ use std::sync::Arc;
 use tasks::{Filter, Tasks};
 use tokio::sync::Mutex;
 use tui_textarea::TextArea;
+use color_eyre::Result;
 
 mod api_calls;
 mod projects;
 mod sections;
 mod tasks;
 mod tui;
+mod error;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -94,7 +96,8 @@ impl<'a> App<'a> {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() -> Result<()> {
+    error::install_hooks()?;
     let mut terminal = tui::init()?;
     let app = Arc::new(Mutex::new(App::new()));
 
