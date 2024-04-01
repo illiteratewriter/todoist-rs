@@ -14,6 +14,7 @@ mod sections;
 mod tasks;
 mod tui;
 mod error;
+mod task_edit;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -39,54 +40,7 @@ pub struct App<'a> {
     pub show_help: bool,
     pub sections: Sections,
     pub show_task_editor: bool,
-    pub task_edit: TaskEdit<'a>,
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct TaskEdit<'a> {
-    pub content: TextArea<'a>,
-    pub description: TextArea<'a>,
-    pub currently_editing: CurrentlyEditing,
-    pub children: Vec<usize>,
-    pub children_list_state: ListState,
-}
-
-impl<'a> TaskEdit<'a> {
-    pub fn next(&mut self) {
-        let i = match self.children_list_state.selected() {
-            Some(i) => {
-                if i >= self.children.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.children_list_state.select(Some(i));
-    }
-
-    pub fn previous(&mut self) {
-        let i = match self.children_list_state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.children.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.children_list_state.select(Some(i));
-    }
-}
-
-#[derive(Debug, Default, PartialEq, Clone)]
-pub enum CurrentlyEditing {
-    #[default]
-    Content,
-    Description,
-    ChildTasks
+    pub task_edit: task_edit::TaskEdit<'a>,
 }
 
 impl<'a> App<'a> {
@@ -143,19 +97,19 @@ async fn main() -> Result<()> {
                             }
                         }
                         if key.code == KeyCode::Tab {
-                            if app.task_edit.currently_editing == CurrentlyEditing::Content {
-                                app.task_edit.currently_editing = CurrentlyEditing::Description
-                            } else if app.task_edit.currently_editing == CurrentlyEditing::Description{
-                                app.task_edit.currently_editing = CurrentlyEditing::ChildTasks
+                            if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
+                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::Description
+                            } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description{
+                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::ChildTasks
                             } else {
-                                app.task_edit.currently_editing = CurrentlyEditing::Content
+                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::Content
                             }
                             continue;
                         }
 
-                        if app.task_edit.currently_editing == CurrentlyEditing::Content {
+                        if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
                             app.task_edit.content.input(key);
-                        } else if app.task_edit.currently_editing == CurrentlyEditing::Description {
+                        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
                             app.task_edit.description.input(key);
                         } else {
                             if key.code == KeyCode::Char('j') {
@@ -228,10 +182,10 @@ async fn main() -> Result<()> {
                                     }
                                 }
 
-                                app.task_edit = TaskEdit {
+                                app.task_edit = task_edit::TaskEdit {
                                     content: TextArea::from(vec![selected.content.clone()]),
                                     description: TextArea::from(vec![selected.description.clone()]),
-                                    currently_editing: CurrentlyEditing::Content,
+                                    currently_editing: task_edit::CurrentlyEditing::Content,
                                     children: children,
                                     children_list_state: ListState::default(),
                                 }

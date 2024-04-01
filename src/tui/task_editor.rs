@@ -6,7 +6,7 @@ use ratatui::{
     },
 };
 
-use crate::{tui::utils, App, CurrentlyEditing};
+use crate::{task_edit::CurrentlyEditing, tui::utils, App};
 
 pub fn editor(f: &mut Frame, app: &mut App) {
     let area = utils::centered_rect(60, 40, f.size());
