@@ -49,11 +49,42 @@ pub struct TaskEdit<'a> {
     pub children_list_state: ListState,
 }
 
+impl<'a> TaskEdit<'a> {
+    pub fn next(&mut self) {
+        let i = match self.children_list_state.selected() {
+            Some(i) => {
+                if i >= self.children.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.children_list_state.select(Some(i));
+    }
+
+    pub fn previous(&mut self) {
+        let i = match self.children_list_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.children.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.children_list_state.select(Some(i));
+    }
+}
+
 #[derive(Debug, Default, PartialEq, Clone)]
 pub enum CurrentlyEditing {
     #[default]
     Content,
     Description,
+    ChildTasks
 }
 
 impl<'a> App<'a> {
@@ -93,11 +124,26 @@ async fn main() -> Result<(), std::io::Error> {
                 if key.kind == KeyEventKind::Press {
                     if app.show_task_editor {
                         if key.code == KeyCode::Esc {
-                            app.show_task_editor = !app.show_task_editor
+                            app.show_task_editor = !app.show_task_editor;
+                        } else if key.code == KeyCode::Enter {
+                            app.show_task_editor = !app.show_task_editor;
+                            if let Some(selected) = app.tasks.state.selected() {
+                                // app.show_task_editor = true;
+                                let index = app.tasks.display_tasks[selected];
+
+                                app.tasks.tasks[index].content = app.task_edit.content.lines().join("\n");
+                                app.tasks.tasks[index].description = app.task_edit.description.lines().join("\n");
+                                let task = app.tasks.tasks[index].clone();
+                                tokio::spawn(async {
+                                    let _ = api_calls::update_task(task).await;
+                                });
+                            }
                         }
                         if key.code == KeyCode::Tab {
                             if app.task_edit.currently_editing == CurrentlyEditing::Content {
                                 app.task_edit.currently_editing = CurrentlyEditing::Description
+                            } else if app.task_edit.currently_editing == CurrentlyEditing::Description{
+                                app.task_edit.currently_editing = CurrentlyEditing::ChildTasks
                             } else {
                                 app.task_edit.currently_editing = CurrentlyEditing::Content
                             }
@@ -106,8 +152,16 @@ async fn main() -> Result<(), std::io::Error> {
 
                         if app.task_edit.currently_editing == CurrentlyEditing::Content {
                             app.task_edit.content.input(key);
-                        } else {
+                        } else if app.task_edit.currently_editing == CurrentlyEditing::Description {
                             app.task_edit.description.input(key);
+                        } else {
+                            if key.code == KeyCode::Char('j') {
+                                app.task_edit.next();
+                            } else if key.code == KeyCode::Char('k') {
+                                app.task_edit.previous();
+                            } else if key.code == KeyCode::Enter {
+                                todo!("add open sub task on pressing enter");
+                            }
                         }
                         continue;
                     }

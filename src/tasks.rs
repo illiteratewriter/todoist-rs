@@ -113,7 +113,7 @@ pub enum Filter {
     ProjectId(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
     pub id: String,
     pub project_id: String,
@@ -128,14 +128,16 @@ pub struct Task {
     pub due: Option<Due>,
     pub url: String,
     pub comment_count: u16,
+    #[serde(skip_serializing)]
     pub created_at: String,
+    #[serde(skip_serializing)]
     pub creator_id: String,
     pub assignee_id: Option<String>,
     pub assigner_id: Option<String>,
     pub duration: Option<Duration>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Due {
     pub string: String,
     #[serde(with = "date_format")]
@@ -145,7 +147,7 @@ pub struct Due {
     pub timezone: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Duration {
     amount: u32,
     unit: String,

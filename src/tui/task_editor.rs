@@ -2,11 +2,11 @@ use ratatui::{
     prelude::*,
     widgets::{
         block::{Position, Title},
-        Block, Borders, Clear, HighlightSpacing, List, Paragraph,
+        Block, Borders, Clear, HighlightSpacing, List,
     },
 };
 
-use crate::{tui::utils, App, CurrentFocus};
+use crate::{tui::utils, App, CurrentlyEditing};
 
 pub fn editor(f: &mut Frame, app: &mut App) {
     let area = utils::centered_rect(60, 40, f.size());
@@ -16,8 +16,8 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     let tasks_block = Block::default()
         .title(Title::from(" Sub tasks ".bold()).alignment(Alignment::Left))
         .borders(Borders::ALL)
-        .fg(match app.current_focus {
-            CurrentFocus::Tasks => Color::Green,
+        .fg(match app.task_edit.currently_editing {
+            CurrentlyEditing::ChildTasks => Color::Green,
             _ => Color::White,
         });
 
@@ -59,11 +59,22 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     app.task_edit
         .content
-        .set_block(Block::default().borders(Borders::ALL).title("Task"));
+        .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
+            match app.task_edit.currently_editing {
+                CurrentlyEditing::Content => Color::Green,
+                _ => Color::White,
+            },
+        ));
 
-    app.task_edit
-        .description
-        .set_block(Block::default().borders(Borders::ALL).title("Description"));
+    app.task_edit.description.set_block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title("Description")
+            .fg(match app.task_edit.currently_editing {
+                CurrentlyEditing::Description => Color::Green,
+                _ => Color::White,
+            }),
+    );
 
     let content = app.task_edit.content.widget();
     let description = app.task_edit.description.widget();
@@ -72,9 +83,10 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     f.render_widget(description, vertical_split[1]);
 
     let close_modal_desc = Title::from(Line::from(vec![
-        " To close, press ".into(),
+        " To save, press ".into(),
+        "Enter".blue().bold(),
+        " and to close, press ".into(),
         "Esc".blue().bold(),
-        " ".into(),
     ]));
 
     let block = Block::default()
