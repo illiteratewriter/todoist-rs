@@ -51,19 +51,21 @@ impl<'a> App<'a> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let client = reqwest::Client::new();
     error::install_hooks()?;
     let mut terminal = tui::init()?;
     let app = Arc::new(Mutex::new(App::new()));
 
     let app_clone = Arc::clone(&app);
+    let client_clone = client.clone();
     let initialise_task = tokio::spawn(async move {
         // todo: make network calls parallel
-        let project_resp = api_calls::fetch_projects().await.unwrap();
+        let project_resp = api_calls::fetch_projects(&client_clone).await.unwrap();
         let projects = Projects::new(project_resp);
-        let task_resp = api_calls::fetch_tasks().await.unwrap();
+        let task_resp = api_calls::fetch_tasks(&client_clone).await.unwrap();
         let tasks = Tasks::new(task_resp);
         let mut app = app_clone.lock().await;
-        let sections_resp = api_calls::fetch_sections().await.unwrap();
+        let sections_resp = api_calls::fetch_sections(&client_clone).await.unwrap();
         let sections = Sections::new(sections_resp);
         app.projects = projects;
         app.tasks = tasks;
@@ -91,8 +93,9 @@ async fn main() -> Result<()> {
                                 app.tasks.tasks[index].content = app.task_edit.content.lines().join("\n");
                                 app.tasks.tasks[index].description = app.task_edit.description.lines().join("\n");
                                 let task = app.tasks.tasks[index].clone();
-                                tokio::spawn(async {
-                                    let _ = api_calls::update_task(task).await;
+                                let client_clone = client.clone();
+                                tokio::spawn(async move{
+                                    let _ = api_calls::update_task(&client_clone, task).await;
                                 });
                             }
                         }
@@ -162,6 +165,8 @@ async fn main() -> Result<()> {
                                 app.tasks.filter_task_list();
                                 app.projects.selected_project = Some(selected_id);
                             }
+                        } else if key.code == KeyCode::Char('x') {
+
                         }
                     } else if app.current_focus == CurrentFocus::Tasks {
                         if key.code == KeyCode::Char('j') {

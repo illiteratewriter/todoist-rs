@@ -6,9 +6,7 @@ use crate::sections;
 use crate::tasks;
 use crate::tasks::Task;
 
-pub async fn fetch_projects() -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
-
+pub async fn fetch_projects(client: &reqwest::Client) -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/projects")
         .header(
@@ -26,9 +24,7 @@ pub async fn fetch_projects() -> Result<Vec<projects::Project>, Box<dyn std::err
     Ok(serialized)
 }
 
-pub async fn fetch_tasks() -> Result<Vec<tasks::Task>, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
-
+pub async fn fetch_tasks(client: &reqwest::Client) -> Result<Vec<tasks::Task>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/tasks")
         .header(
@@ -50,9 +46,7 @@ pub async fn fetch_tasks() -> Result<Vec<tasks::Task>, Box<dyn std::error::Error
     Ok(serialized)
 }
 
-pub async fn fetch_sections() -> Result<Vec<sections::Section>, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
-
+pub async fn fetch_sections(client: &reqwest::Client) -> Result<Vec<sections::Section>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/sections")
         .header(
@@ -74,9 +68,7 @@ pub async fn fetch_sections() -> Result<Vec<sections::Section>, Box<dyn std::err
     Ok(serialized)
 }
 
-pub async fn update_task(task: Task) -> Result<(), Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
-
+pub async fn update_task(client: &reqwest::Client, task: Task) -> Result<(), Box<dyn std::error::Error>> {
     let task_string = serde_json::to_string(&task)?;
     let json: serde_json::Value = serde_json::from_str(&task_string)?;
 
