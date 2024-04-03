@@ -87,20 +87,18 @@ async fn main() -> Result<()> {
                             app.show_task_editor = !app.show_task_editor;
                         } else if key.code == KeyCode::Enter {
                             app.show_task_editor = !app.show_task_editor;
-                            if let Some(selected) = app.tasks.state.selected() {
-                                // app.show_task_editor = true;
-                                let index = app.tasks.display_tasks[selected];
+                            // app.show_task_editor = true;
+                            let index = app.task_edit.current_task_index;
 
-                                app.tasks.tasks[index].content =
-                                    app.task_edit.content.lines().join("\n");
-                                app.tasks.tasks[index].description =
-                                    app.task_edit.description.lines().join("\n");
-                                let task = app.tasks.tasks[index].clone();
-                                let client_clone = client.clone();
-                                tokio::spawn(async move {
-                                    let _ = api_calls::update_task(&client_clone, task).await;
-                                });
-                            }
+                            app.tasks.tasks[index].content =
+                                app.task_edit.content.lines().join("\n");
+                            app.tasks.tasks[index].description =
+                                app.task_edit.description.lines().join("\n");
+                            let task = app.tasks.tasks[index].clone();
+                            let client_clone = client.clone();
+                            tokio::spawn(async move {
+                                let _ = api_calls::update_task(&client_clone, task).await;
+                            });
                         }
                         if key.code == KeyCode::Tab {
                             if app.task_edit.currently_editing
@@ -132,7 +130,31 @@ async fn main() -> Result<()> {
                             } else if key.code == KeyCode::Char('k') {
                                 app.task_edit.previous();
                             } else if key.code == KeyCode::Enter {
-                                todo!("add open sub task on pressing enter");
+                                if let Some(selected) = app.task_edit.children_list_state.selected()
+                                {
+                                    app.show_task_editor = true;
+                                    let index = app.task_edit.children[selected];
+                                    let selected = &app.tasks.tasks[index];
+
+                                    let mut children = Vec::new();
+
+                                    for (index, task) in app.tasks.tasks.iter().enumerate() {
+                                        if task.parent_id == Some(selected.id.clone()) {
+                                            children.push(index);
+                                        }
+                                    }
+
+                                    app.task_edit = task_edit::TaskEdit {
+                                        content: TextArea::from(vec![selected.content.clone()]),
+                                        description: TextArea::from(vec![selected
+                                            .description
+                                            .clone()]),
+                                        currently_editing: task_edit::CurrentlyEditing::Content,
+                                        children: children,
+                                        children_list_state: ListState::default(),
+                                        current_task_index: index,
+                                    }
+                                }
                             }
                         }
                         continue;
@@ -204,6 +226,7 @@ async fn main() -> Result<()> {
                                     currently_editing: task_edit::CurrentlyEditing::Content,
                                     children: children,
                                     children_list_state: ListState::default(),
+                                    current_task_index: index,
                                 }
                             }
                         } else if key.code == KeyCode::Char('x') {

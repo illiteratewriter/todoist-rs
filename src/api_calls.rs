@@ -12,7 +12,7 @@ pub async fn fetch_projects(
         .get("https://api.todoist.com/rest/v2/projects")
         .header(
             AUTHORIZATION,
-            format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .send()
         .await?
@@ -32,7 +32,7 @@ pub async fn fetch_tasks(
         .get("https://api.todoist.com/rest/v2/tasks")
         .header(
             AUTHORIZATION,
-            format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .send()
         .await
@@ -56,7 +56,7 @@ pub async fn fetch_sections(
         .get("https://api.todoist.com/rest/v2/sections")
         .header(
             AUTHORIZATION,
-            format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .send()
         .await
@@ -84,10 +84,11 @@ pub async fn update_task(
         .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task.id))
         .header(
             AUTHORIZATION,
-            format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .json(&json)
-        .send();
+        .send()
+        .await?;
     Ok(())
 }
 
@@ -96,16 +97,13 @@ pub async fn close_task(
     task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // println!("task id {}", task_id);
-    let m =format!(
-        "https://api.todoist.com/rest/v2/tasks/{}/close",
-        task_id
-    );
+    let m = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
     println!("M {} ", m);
     let _response = client
         .post(m)
         .header(
             AUTHORIZATION,
-            format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .send()
         .await?;

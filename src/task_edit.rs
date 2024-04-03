@@ -8,6 +8,7 @@ pub struct TaskEdit<'a> {
     pub currently_editing: CurrentlyEditing,
     pub children: Vec<usize>,
     pub children_list_state: ListState,
+    pub current_task_index: usize,
 }
 
 impl<'a> TaskEdit<'a> {

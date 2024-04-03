@@ -40,6 +40,9 @@ impl Tasks {
         self.state = ListState::default();
         self.display_tasks = Vec::new();
         for (index, task) in self.tasks.iter().enumerate() {
+            if let Some(_) = task.parent_id {
+                continue;
+            }
             match &self.filter {
                 Filter::All => {
                     self.display_tasks.push(index);
