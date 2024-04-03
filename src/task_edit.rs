@@ -45,5 +45,5 @@ pub enum CurrentlyEditing {
     #[default]
     Content,
     Description,
-    ChildTasks
+    ChildTasks,
 }

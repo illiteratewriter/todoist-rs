@@ -1,3 +1,4 @@
+use color_eyre::Result;
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
 use ratatui::widgets::ListState;
@@ -6,15 +7,14 @@ use std::sync::Arc;
 use tasks::{Filter, Tasks};
 use tokio::sync::Mutex;
 use tui_textarea::TextArea;
-use color_eyre::Result;
 
 mod api_calls;
+mod error;
 mod projects;
 mod sections;
+mod task_edit;
 mod tasks;
 mod tui;
-mod error;
-mod task_edit;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -90,29 +90,40 @@ async fn main() -> Result<()> {
                                 // app.show_task_editor = true;
                                 let index = app.tasks.display_tasks[selected];
 
-                                app.tasks.tasks[index].content = app.task_edit.content.lines().join("\n");
-                                app.tasks.tasks[index].description = app.task_edit.description.lines().join("\n");
+                                app.tasks.tasks[index].content =
+                                    app.task_edit.content.lines().join("\n");
+                                app.tasks.tasks[index].description =
+                                    app.task_edit.description.lines().join("\n");
                                 let task = app.tasks.tasks[index].clone();
                                 let client_clone = client.clone();
-                                tokio::spawn(async move{
+                                tokio::spawn(async move {
                                     let _ = api_calls::update_task(&client_clone, task).await;
                                 });
                             }
                         }
                         if key.code == KeyCode::Tab {
-                            if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
-                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::Description
-                            } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description{
-                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::ChildTasks
+                            if app.task_edit.currently_editing
+                                == task_edit::CurrentlyEditing::Content
+                            {
+                                app.task_edit.currently_editing =
+                                    task_edit::CurrentlyEditing::Description
+                            } else if app.task_edit.currently_editing
+                                == task_edit::CurrentlyEditing::Description
+                            {
+                                app.task_edit.currently_editing =
+                                    task_edit::CurrentlyEditing::ChildTasks
                             } else {
-                                app.task_edit.currently_editing = task_edit::CurrentlyEditing::Content
+                                app.task_edit.currently_editing =
+                                    task_edit::CurrentlyEditing::Content
                             }
                             continue;
                         }
 
                         if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
                             app.task_edit.content.input(key);
-                        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
+                        } else if app.task_edit.currently_editing
+                            == task_edit::CurrentlyEditing::Description
+                        {
                             app.task_edit.description.input(key);
                         } else {
                             if key.code == KeyCode::Char('j') {
@@ -166,7 +177,6 @@ async fn main() -> Result<()> {
                                 app.projects.selected_project = Some(selected_id);
                             }
                         } else if key.code == KeyCode::Char('x') {
-
                         }
                     } else if app.current_focus == CurrentFocus::Tasks {
                         if key.code == KeyCode::Char('j') {
@@ -195,7 +205,14 @@ async fn main() -> Result<()> {
                                     children_list_state: ListState::default(),
                                 }
                             }
-                            // app.tasks.select().await;
+                        } else if key.code == KeyCode::Char('x') {
+                            if let Some(selected) = app.tasks.state.selected() {
+                                let index = app.tasks.display_tasks[selected];
+                                app.tasks.state = ListState::default();
+                                app.tasks.display_tasks.remove(selected);
+                                app.tasks.tasks.remove(index);
+                                app.tasks.filter_task_list();
+                            }
                         }
                     }
                 }
