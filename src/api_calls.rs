@@ -93,17 +93,21 @@ pub async fn update_task(
 
 pub async fn close_task(
     client: &reqwest::Client,
-    task: Task,
+    task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    // println!("task id {}", task_id);
+    let m =format!(
+        "https://api.todoist.com/rest/v2/tasks/{}/close",
+        task_id
+    );
+    println!("M {} ", m);
     let _response = client
-        .post(format!(
-            "https://api.todoist.com/rest/v2/tasks/{}/close",
-            task.id
-        ))
+        .post(m)
         .header(
             AUTHORIZATION,
             format!("Bearer {}", "afe0921da7503038a0597511a26a479498c5fd56"),
         )
-        .send();
+        .send()
+        .await?;
     Ok(())
 }

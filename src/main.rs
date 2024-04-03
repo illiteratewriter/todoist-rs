@@ -1,3 +1,4 @@
+use api_calls::close_task;
 use color_eyre::Result;
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use projects::Projects;
@@ -208,10 +209,12 @@ async fn main() -> Result<()> {
                         } else if key.code == KeyCode::Char('x') {
                             if let Some(selected) = app.tasks.state.selected() {
                                 let index = app.tasks.display_tasks[selected];
+                                let task_id = app.tasks.tasks[index].id.clone();
                                 app.tasks.state = ListState::default();
                                 app.tasks.display_tasks.remove(selected);
                                 app.tasks.tasks.remove(index);
                                 app.tasks.filter_task_list();
+                                close_task(&client, task_id).await.unwrap();
                             }
                         }
                     }
