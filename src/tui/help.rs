@@ -23,7 +23,14 @@ pub fn help(f: &mut Frame) {
         )
         .borders(Borders::ALL);
 
-    let rows = [Row::new(vec!["t", "Today's tasks"])];
+    let rows = [
+        Row::new(vec!["t", "Today's tasks"]),
+        Row::new(vec!["q", "Quit"]),
+        Row::new(vec![
+            "x",
+            "Press x while a task is highlighted to mark as done",
+        ]),
+    ];
     let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
     let table = Table::new(rows, widths)
         .header(
