@@ -2,24 +2,16 @@ use ratatui::{
     prelude::*,
     widgets::{
         block::{Position, Title},
-        Block, Borders, Clear
+        Block, Borders, Clear,
     },
 };
 
-use crate::{task_edit::CurrentlyEditing, tui::utils, App};
+use crate::{new_task::CurrentlyEditing, tui::utils, App};
 
 pub fn editor(f: &mut Frame, app: &mut App) {
     let area = utils::centered_rect(60, 40, f.size());
 
     f.render_widget(Clear, area);
-
-    // let tasks_block = Block::default()
-    //     .title(Title::from(" Sub tasks ".bold()).alignment(Alignment::Left))
-    //     .borders(Borders::ALL)
-    //     .fg(match app.task_edit.currently_editing {
-    //         CurrentlyEditing::ChildTasks => Color::Green,
-    //         _ => Color::White,
-    //     });
 
     let inner_area = area.inner(&Margin {
         vertical: 1,
@@ -35,27 +27,27 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         ])
         .split(inner_area);
 
-    app.task_edit
+    app.new_task
         .content
         .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
-            match app.task_edit.currently_editing {
+            match app.new_task.currently_editing {
                 CurrentlyEditing::Content => Color::Green,
                 _ => Color::White,
             },
         ));
 
-    app.task_edit.description.set_block(
+    app.new_task.description.set_block(
         Block::default()
             .borders(Borders::ALL)
             .title("Description")
-            .fg(match app.task_edit.currently_editing {
+            .fg(match app.new_task.currently_editing {
                 CurrentlyEditing::Description => Color::Green,
                 _ => Color::White,
             }),
     );
 
-    let content = app.task_edit.content.widget();
-    let description = app.task_edit.description.widget();
+    let content = app.new_task.content.widget();
+    let description = app.new_task.description.widget();
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);

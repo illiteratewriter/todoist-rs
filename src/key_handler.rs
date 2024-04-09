@@ -4,8 +4,10 @@ use reqwest::Client;
 use tui_textarea::TextArea;
 
 use crate::{
-    api_calls::{self, close_task},
-    task_edit, App,
+    api_calls::{self, close_task, create_task},
+    new_task, task_edit,
+    tasks::Task,
+    App,
 };
 
 pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
@@ -37,7 +39,7 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
         app.task_edit.content.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
         app.task_edit.description.input(key);
-    } else {
+    } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
         if key.code == KeyCode::Char('j') {
             app.task_edit.next();
         } else if key.code == KeyCode::Char('k') {
@@ -87,7 +89,46 @@ pub fn handle_projects(app: &mut App, key: KeyEvent) {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.show_new_task = true;
+            app.new_task = new_task::NewTask::new(selected_id);
         }
+    }
+}
+
+pub fn handle_new_tasks(
+    app: &mut App,
+    key: KeyEvent,
+    client: Client,
+    tx: std::sync::mpsc::Sender<Task>,
+) {
+    if key.code == KeyCode::Esc {
+        app.show_new_task = !app.show_new_task;
+    } else if key.code == KeyCode::Enter {
+        app.show_new_task = !app.show_new_task;
+        let json = app.new_task.get_json();
+
+        tokio::spawn(async move {
+            let result = create_task(&client, json, tx).await;
+            if let Err(e) = result {
+                eprintln!("Failed to create task: {}", e);
+            }
+        });
+    }
+    if key.code == KeyCode::Tab {
+        if app.new_task.currently_editing == new_task::CurrentlyEditing::Content {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::Description
+        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::DueString
+        } else {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::Content
+        }
+        return;
+    }
+    if app.new_task.currently_editing == new_task::CurrentlyEditing::Content {
+        app.new_task.content.input(key);
+    } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
+        app.new_task.description.input(key);
+    } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString {
+        todo!("DUE STRING");
     }
 }
 

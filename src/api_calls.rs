@@ -1,5 +1,6 @@
 use reqwest::header::AUTHORIZATION;
 
+use crate::new_task::NewTask;
 use crate::projects;
 use crate::sections;
 use crate::tasks;
@@ -97,15 +98,39 @@ pub async fn close_task(
     task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // println!("task id {}", task_id);
-    let m = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
-    println!("M {} ", m);
+    let url = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
     let _response = client
-        .post(m)
+        .post(url)
         .header(
             AUTHORIZATION,
             format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
         )
         .send()
         .await?;
+    Ok(())
+}
+
+pub async fn create_task<'a>(
+    client: &reqwest::Client,
+    json: serde_json::Value,
+    tx: std::sync::mpsc::Sender<Task>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let response = client
+        .post("https://api.todoist.com/rest/v2/tasks")
+        .header(
+            AUTHORIZATION,
+            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
+        )
+        .json(&json)
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+
+    let serialized: Task = serde_json::from_str(&response).unwrap();
+
+    tx.send(serialized).unwrap();
     Ok(())
 }

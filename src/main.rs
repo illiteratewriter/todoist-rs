@@ -1,10 +1,14 @@
 use color_eyre::Result;
 use crossterm::event::{self, KeyCode, KeyEventKind};
-use key_handler::{handle_projects, handle_task_editor, handle_tasks};
+use key_handler::{handle_new_tasks, handle_projects, handle_task_editor, handle_tasks};
+use new_task::NewTask;
 use projects::Projects;
 use sections::Sections;
-use std::sync::Arc;
-use tasks::{Filter, Tasks};
+use std::sync::{
+    mpsc::{self, Receiver, Sender, TryRecvError},
+    Arc,
+};
+use tasks::{Filter, Task, Tasks};
 use tokio::sync::Mutex;
 
 mod api_calls;
@@ -43,6 +47,7 @@ pub struct App<'a> {
     pub show_task_editor: bool,
     pub task_edit: task_edit::TaskEdit<'a>,
     pub show_new_task: bool,
+    pub new_task: NewTask<'a>,
 }
 
 impl<'a> App<'a> {
@@ -53,6 +58,7 @@ impl<'a> App<'a> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let (tx, rx): (Sender<Task>, Receiver<Task>) = mpsc::channel();
     let client = reqwest::Client::new();
     error::install_hooks()?;
     let mut terminal = tui::init()?;
@@ -89,8 +95,14 @@ async fn main() -> Result<()> {
                     }
 
                     if app.show_new_task {
+                        handle_new_tasks(&mut app, key, client.clone(), tx.clone());
+                        continue;
+                    }
+
+                    if app.show_new_task {
                         if key.code == KeyCode::Esc {
                             app.show_new_task = false;
+                        } else if key.code == KeyCode::Enter {
                         }
                     }
 
@@ -127,6 +139,15 @@ async fn main() -> Result<()> {
                     }
                 }
             }
+        }
+
+        match rx.try_recv() {
+            Ok(received) => {
+                app.tasks.tasks.push(received);
+                app.tasks.filter_task_list();
+            }
+            Err(TryRecvError::Empty) => continue,
+            Err(TryRecvError::Disconnected) => break,
         }
     }
     tui::restore()?;

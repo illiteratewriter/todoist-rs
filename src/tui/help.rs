@@ -30,6 +30,10 @@ pub fn help(f: &mut Frame) {
             "x",
             "Press x while a task is highlighted to mark as done",
         ]),
+        Row::new(vec![
+            "+",
+            "Press + while on a project to add task to the project",
+        ]),
     ];
     let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
     let table = Table::new(rows, widths)
