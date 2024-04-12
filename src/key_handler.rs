@@ -72,7 +72,7 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
 
             app.show_task_editor = false;
             app.show_new_task = true;
-            
+
             app.new_task = new_task::NewTask::new(task.project_id, Some(task.id));
         }
     }
