@@ -1,6 +1,5 @@
 use reqwest::header::AUTHORIZATION;
 
-use crate::new_task::NewTask;
 use crate::projects;
 use crate::sections;
 use crate::tasks;
