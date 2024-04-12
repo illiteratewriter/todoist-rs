@@ -1,5 +1,3 @@
-use reqwest::header::AUTHORIZATION;
-
 use crate::projects;
 use crate::sections;
 use crate::tasks;
@@ -10,10 +8,6 @@ pub async fn fetch_projects(
 ) -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/projects")
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .send()
         .await?
         .text()
@@ -30,10 +24,6 @@ pub async fn fetch_tasks(
 ) -> Result<Vec<tasks::Task>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/tasks")
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .send()
         .await
         .unwrap()
@@ -54,10 +44,6 @@ pub async fn fetch_sections(
 ) -> Result<Vec<sections::Section>, Box<dyn std::error::Error>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/sections")
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .send()
         .await
         .unwrap()
@@ -82,10 +68,6 @@ pub async fn update_task(
 
     let _response = client
         .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task.id))
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .json(&json)
         .send()
         .await?;
@@ -100,10 +82,6 @@ pub async fn close_task(
     let url = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
     let _response = client
         .post(url)
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .send()
         .await?;
     Ok(())
@@ -116,10 +94,6 @@ pub async fn create_task<'a>(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = client
         .post("https://api.todoist.com/rest/v2/tasks")
-        .header(
-            AUTHORIZATION,
-            format!("Bearer {}", "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7"),
-        )
         .json(&json)
         .send()
         .await

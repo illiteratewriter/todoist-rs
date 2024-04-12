@@ -3,6 +3,7 @@ use crossterm::event::{self, KeyCode, KeyEventKind};
 use key_handler::{handle_new_tasks, handle_projects, handle_task_editor, handle_tasks};
 use new_task::NewTask;
 use projects::Projects;
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use sections::Sections;
 use std::sync::{
     mpsc::{self, Receiver, Sender, TryRecvError},
@@ -59,7 +60,17 @@ impl<'a> App<'a> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let (tx, rx): (Sender<Task>, Receiver<Task>) = mpsc::channel();
-    let client = reqwest::Client::new();
+
+    let bearer_token = "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7".to_string();
+    let mut headers = HeaderMap::new();
+    headers.insert(AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", bearer_token)).unwrap());
+
+    let client = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()
+        .unwrap();
+
+
     error::install_hooks()?;
     let mut terminal = tui::init()?;
     let app = Arc::new(Mutex::new(App::new()));
