@@ -50,9 +50,10 @@ pub enum DurationUnit {
 }
 
 impl<'a> NewTask<'a> {
-    pub fn new(project_id: String) -> Self {
+    pub fn new(project_id: String, parent_id: Option<String>) -> Self {
         NewTask {
             project_id: Some(project_id),
+            parent_id,
             ..Default::default()
         }
     }

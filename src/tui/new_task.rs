@@ -36,9 +36,8 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             },
         ));
 
-    app.new_task
-        .description
-        .set_block(Block::default()
+    app.new_task.description.set_block(
+        Block::default()
             .borders(Borders::ALL)
             .title("Description")
             .fg(match app.new_task.currently_editing {
@@ -47,14 +46,15 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
-    app.new_task
-    .due_string
-    .set_block(Block::default().borders(Borders::ALL).title("Due String").fg(
-        match app.new_task.currently_editing {
-            CurrentlyEditing::DueString => Color::Green,
-            _ => Color::White,
-        },
-    ));
+    app.new_task.due_string.set_block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title("Due String")
+            .fg(match app.new_task.currently_editing {
+                CurrentlyEditing::DueString => Color::Green,
+                _ => Color::White,
+            }),
+    );
 
     let content = app.new_task.content.widget();
     let description = app.new_task.description.widget();

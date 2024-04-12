@@ -68,7 +68,12 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
                 }
             }
         } else if key.code == KeyCode::Char('n') {
-            todo!("implement, add sub tasks")
+            let task = app.tasks.tasks[app.task_edit.current_task_index].clone();
+
+            app.show_task_editor = false;
+            app.show_new_task = true;
+            
+            app.new_task = new_task::NewTask::new(task.project_id, Some(task.id));
         }
     }
 }
@@ -91,7 +96,7 @@ pub fn handle_projects(app: &mut App, key: KeyEvent) {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.show_new_task = true;
-            app.new_task = new_task::NewTask::new(selected_id);
+            app.new_task = new_task::NewTask::new(selected_id, None);
         }
     }
 }
@@ -120,7 +125,7 @@ pub fn handle_new_tasks(
             app.new_task.currently_editing = new_task::CurrentlyEditing::Description
         } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
             app.new_task.currently_editing = new_task::CurrentlyEditing::DueString
-        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString{
+        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString {
             app.new_task.currently_editing = new_task::CurrentlyEditing::Content
         }
         return;
