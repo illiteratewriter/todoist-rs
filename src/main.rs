@@ -1,13 +1,20 @@
 use color_eyre::Result;
 use crossterm::event::{self, KeyCode, KeyEventKind};
+use dirs::config_dir;
 use key_handler::{handle_new_tasks, handle_projects, handle_task_editor, handle_tasks};
 use new_task::NewTask;
 use projects::Projects;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use sections::Sections;
-use std::sync::{
-    mpsc::{self, Receiver, Sender, TryRecvError},
-    Arc,
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::{self, File},
+    io::{stdin, BufReader},
+    path::Path,
+    sync::{
+        mpsc::{self, Receiver, Sender, TryRecvError},
+        Arc,
+    },
 };
 use tasks::{Filter, Task, Tasks};
 use tokio::sync::Mutex;
@@ -60,16 +67,17 @@ impl<'a> App<'a> {
 #[tokio::main]
 async fn main() -> Result<()> {
     let (tx, rx): (Sender<Task>, Receiver<Task>) = mpsc::channel();
-
-    let bearer_token = "31bd6a4adbba5480e76be2f2ce09dd53dc7ac3e7".to_string();
+    let bearer_token = get_token();
     let mut headers = HeaderMap::new();
-    headers.insert(AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", bearer_token)).unwrap());
+    headers.insert(
+        AUTHORIZATION,
+        HeaderValue::from_str(&format!("Bearer {}", bearer_token)).unwrap(),
+    );
 
     let client = reqwest::Client::builder()
         .default_headers(headers)
         .build()
         .unwrap();
-
 
     error::install_hooks()?;
     let mut terminal = tui::init()?;
@@ -164,4 +172,46 @@ async fn main() -> Result<()> {
     tui::restore()?;
     let _ = initialise_task.await;
     Ok(())
+}
+
+#[derive(Deserialize, Serialize)]
+struct Config {
+    bearer_token: String,
+}
+
+fn get_token() -> String {
+    let mut client_key = String::new();
+    match config_dir() {
+        Some(home) => {
+            let path = Path::new(&home);
+            let config_dir = path.join(".todoist");
+            if !config_dir.exists() {
+                fs::create_dir(&config_dir).unwrap();
+            }
+            let config_file_path = &config_dir.join("config.json");
+
+            if config_file_path.exists() {
+                let file = File::open(config_file_path).unwrap();
+                let reader = BufReader::new(file);
+
+                let config: Config = serde_json::from_reader(reader).unwrap();
+                client_key = config.bearer_token;
+            } else {
+                println!("Config will be saved to {}", config_file_path.display());
+
+                println!("\nEnter your Client key");
+                stdin().read_line(&mut client_key).unwrap();
+                client_key = client_key.trim().to_string(); // Trim the newline character
+
+                let config = Config {
+                    bearer_token: client_key.clone(),
+                };
+
+                let config_json = serde_json::to_string(&config).unwrap();
+                fs::write(config_file_path, config_json).unwrap();
+            }
+        }
+        None => panic!("No directory found"),
+    }
+    client_key
 }

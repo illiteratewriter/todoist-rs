@@ -80,10 +80,7 @@ pub async fn close_task(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // println!("task id {}", task_id);
     let url = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
-    let _response = client
-        .post(url)
-        .send()
-        .await?;
+    let _response = client.post(url).send().await?;
     Ok(())
 }
 
