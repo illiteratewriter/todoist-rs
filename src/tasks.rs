@@ -73,6 +73,10 @@ impl Tasks {
     }
 
     pub fn next(&mut self) {
+        if self.display_tasks.len() == 0 {
+            self.state.select(None);
+            return;
+        }
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= self.display_tasks.len() - 1 {
@@ -87,6 +91,10 @@ impl Tasks {
     }
 
     pub fn previous(&mut self) {
+        if self.display_tasks.len() == 0 {
+            self.state.select(None);
+            return;
+        }
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {

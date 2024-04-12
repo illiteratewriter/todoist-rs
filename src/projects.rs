@@ -46,6 +46,10 @@ impl Projects {
     // }
 
     pub fn next(&mut self) {
+        if self.projects.len() == 0 {
+            self.state.select(None);
+            return;
+        }
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= self.projects.len() - 1 {
@@ -60,6 +64,10 @@ impl Projects {
     }
 
     pub fn previous(&mut self) {
+        if self.projects.len() == 0 {
+            self.state.select(None);
+            return;
+        }
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {

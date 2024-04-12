@@ -13,6 +13,10 @@ pub struct TaskEdit<'a> {
 
 impl<'a> TaskEdit<'a> {
     pub fn next(&mut self) {
+        if self.children.len() == 0 {
+            self.children_list_state.select(None);
+            return;
+        }
         let i = match self.children_list_state.selected() {
             Some(i) => {
                 if i >= self.children.len() - 1 {
@@ -27,6 +31,10 @@ impl<'a> TaskEdit<'a> {
     }
 
     pub fn previous(&mut self) {
+        if self.children.len() == 0 {
+            self.children_list_state.select(None);
+            return;
+        }
         let i = match self.children_list_state.selected() {
             Some(i) => {
                 if i == 0 {
