@@ -67,6 +67,8 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
                     current_task_index: index,
                 }
             }
+        } else if key.code == KeyCode::Char('n') {
+            todo!("implement, add sub tasks")
         }
     }
 }
@@ -118,7 +120,7 @@ pub fn handle_new_tasks(
             app.new_task.currently_editing = new_task::CurrentlyEditing::Description
         } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
             app.new_task.currently_editing = new_task::CurrentlyEditing::DueString
-        } else {
+        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString{
             app.new_task.currently_editing = new_task::CurrentlyEditing::Content
         }
         return;
@@ -128,7 +130,7 @@ pub fn handle_new_tasks(
     } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
         app.new_task.description.input(key);
     } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString {
-        todo!("DUE STRING");
+        app.new_task.due_string.input(key);
     }
 }
 

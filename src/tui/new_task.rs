@@ -36,8 +36,9 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             },
         ));
 
-    app.new_task.description.set_block(
-        Block::default()
+    app.new_task
+        .description
+        .set_block(Block::default()
             .borders(Borders::ALL)
             .title("Description")
             .fg(match app.new_task.currently_editing {
@@ -46,11 +47,22 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
+    app.new_task
+    .due_string
+    .set_block(Block::default().borders(Borders::ALL).title("Due String").fg(
+        match app.new_task.currently_editing {
+            CurrentlyEditing::DueString => Color::Green,
+            _ => Color::White,
+        },
+    ));
+
     let content = app.new_task.content.widget();
     let description = app.new_task.description.widget();
+    let due_string = app.new_task.due_string.widget();
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);
+    f.render_widget(due_string, vertical_split[2]);
 
     let close_modal_desc = Title::from(Line::from(vec![
         " To save, press ".into(),
@@ -60,7 +72,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     ]));
 
     let block = Block::default()
-        .title(" Edit task ")
+        .title(" New task ")
         .title(
             close_modal_desc
                 .alignment(Alignment::Center)
