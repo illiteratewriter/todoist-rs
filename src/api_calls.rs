@@ -14,8 +14,6 @@ pub async fn fetch_projects(
         .await?;
 
     let serialized: Vec<projects::Project> = serde_json::from_str(&response)?;
-
-    // println!("response = {:#?}", serialized);
     Ok(serialized)
 }
 
@@ -31,11 +29,7 @@ pub async fn fetch_tasks(
         .await
         .unwrap();
 
-    // println!("RESPONSE {}", response);
-
     let serialized: Vec<tasks::Task> = serde_json::from_str(&response).unwrap();
-
-    // println!("response = {:#?}", serialized);
     Ok(serialized)
 }
 
@@ -51,11 +45,7 @@ pub async fn fetch_sections(
         .await
         .unwrap();
 
-    // println!("RESPONSE {}", response);
-
     let serialized: Vec<sections::Section> = serde_json::from_str(&response).unwrap();
-
-    // println!("response = {:#?}", serialized);
     Ok(serialized)
 }
 
@@ -71,6 +61,7 @@ pub async fn update_task(
         .json(&json)
         .send()
         .await?;
+
     Ok(())
 }
 
@@ -78,9 +69,10 @@ pub async fn close_task(
     client: &reqwest::Client,
     task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // println!("task id {}", task_id);
     let url = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
+
     let _response = client.post(url).send().await?;
+
     Ok(())
 }
 
@@ -100,7 +92,6 @@ pub async fn create_task<'a>(
         .unwrap();
 
     let serialized: Task = serde_json::from_str(&response).unwrap();
-
     tx.send(serialized).unwrap();
     Ok(())
 }

@@ -20,6 +20,7 @@ use tasks::{Filter, Task, Tasks};
 use tokio::sync::Mutex;
 
 mod api_calls;
+mod banner;
 mod error;
 mod key_handler;
 mod new_task;
@@ -28,7 +29,6 @@ mod sections;
 mod task_edit;
 mod tasks;
 mod tui;
-mod banner;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -200,7 +200,6 @@ fn get_token() -> String {
             } else {
                 println!("{}", banner::BANNER);
 
-                
                 println!();
 
                 println!("\nHow to get setup:");
@@ -213,12 +212,12 @@ fn get_token() -> String {
                     "You are now ready to authenticate with Todoist!",
                     &format!("Config will be saved to {}\n\n", config_file_path.display()),
                   ];
-            
-                  let mut number = 1;
-                  for item in instructions.iter() {
+
+                let mut number = 1;
+                for item in instructions.iter() {
                     println!("  {}. {}", number, item);
                     number += 1;
-                  }
+                }
 
                 println!("\nEnter your Client key:");
                 stdin().read_line(&mut client_key).unwrap();

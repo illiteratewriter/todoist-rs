@@ -86,8 +86,4 @@ impl Projects {
         self.state.select(None);
         *self.state.offset_mut() = offset;
     }
-
-    pub fn get_sections(&mut self) {
-        println!("{:?}", self.state)
-    }
 }
