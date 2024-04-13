@@ -28,6 +28,7 @@ mod sections;
 mod task_edit;
 mod tasks;
 mod tui;
+mod banner;
 
 #[derive(Debug, Default)]
 pub enum CurrentScreen {
@@ -197,9 +198,29 @@ fn get_token() -> String {
                 let config: Config = serde_json::from_reader(reader).unwrap();
                 client_key = config.bearer_token;
             } else {
-                println!("Config will be saved to {}", config_file_path.display());
+                println!("{}", banner::BANNER);
 
-                println!("\nEnter your Client key");
+                
+                println!();
+
+                println!("\nHow to get setup:");
+                println!("-----------------\n");
+
+                let instructions = [
+                    "Go to the todoist integrations - https://app.todoist.com/app/settings/integrations/developer",
+                    "Under the developer tab, you will be able to see the API Token",
+                    "Copy the token and paste it below",
+                    "You are now ready to authenticate with Todoist!",
+                    &format!("Config will be saved to {}\n\n", config_file_path.display()),
+                  ];
+            
+                  let mut number = 1;
+                  for item in instructions.iter() {
+                    println!("  {}. {}", number, item);
+                    number += 1;
+                  }
+
+                println!("\nEnter your Client key:");
                 stdin().read_line(&mut client_key).unwrap();
                 client_key = client_key.trim().to_string(); // Trim the newline character
 
