@@ -197,6 +197,8 @@ fn get_token() -> String {
 
                 let config: Config = serde_json::from_reader(reader).unwrap();
                 client_key = config.bearer_token;
+
+                println!("Your config is saved at {}", config_file_path.display());
             } else {
                 println!("{}", banner::BANNER);
 

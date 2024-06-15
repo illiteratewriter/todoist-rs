@@ -49,7 +49,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .style(Style::default());
 
-    let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Green)))
+    let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Indexed(47))))
         .block(title_block);
 
     f.render_widget(title, chunks[0]);
@@ -59,7 +59,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     for project in &app.projects.projects {
         let color = if let Some(selected_project) = &app.projects.selected_project {
             if project.id == *selected_project {
-                Color::Red
+                Color::Indexed(214)
             } else {
                 Color::Yellow
             }
@@ -77,7 +77,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .title(Title::from(" My projects ".bold()).alignment(Alignment::Left))
         .borders(Borders::ALL)
         .fg(match app.current_focus {
-            CurrentFocus::Projects => Color::Green,
+            CurrentFocus::Projects => Color::Indexed(47),
             _ => Color::White,
         });
 
@@ -109,7 +109,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         )
         .borders(Borders::ALL)
         .fg(match app.current_focus {
-            CurrentFocus::Tasks => Color::Green,
+            CurrentFocus::Tasks => Color::Indexed(47),
             _ => Color::White,
         });
 

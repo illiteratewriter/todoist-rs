@@ -17,7 +17,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .title(Title::from(" Sub tasks ".bold()).alignment(Alignment::Left))
         .borders(Borders::ALL)
         .fg(match app.task_edit.currently_editing {
-            CurrentlyEditing::ChildTasks => Color::Green,
+            CurrentlyEditing::ChildTasks => Color::Indexed(47),
             _ => Color::White,
         });
 
@@ -61,7 +61,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .content
         .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
             match app.task_edit.currently_editing {
-                CurrentlyEditing::Content => Color::Green,
+                CurrentlyEditing::Content => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
@@ -71,7 +71,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .borders(Borders::ALL)
             .title("Description")
             .fg(match app.task_edit.currently_editing {
-                CurrentlyEditing::Description => Color::Green,
+                CurrentlyEditing::Description => Color::Indexed(47),
                 _ => Color::White,
             }),
     );

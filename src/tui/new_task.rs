@@ -31,7 +31,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .content
         .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
             match app.new_task.currently_editing {
-                CurrentlyEditing::Content => Color::Green,
+                CurrentlyEditing::Content => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
@@ -41,7 +41,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .borders(Borders::ALL)
             .title("Description")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::Description => Color::Green,
+                CurrentlyEditing::Description => Color::Indexed(47),
                 _ => Color::White,
             }),
     );
@@ -51,7 +51,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             .borders(Borders::ALL)
             .title("Due String")
             .fg(match app.new_task.currently_editing {
-                CurrentlyEditing::DueString => Color::Green,
+                CurrentlyEditing::DueString => Color::Indexed(47),
                 _ => Color::White,
             }),
     );
