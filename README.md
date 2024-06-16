@@ -8,6 +8,10 @@ This is a terminal client for Todoist, (inspired by Spotify-TUI). The project is
 - Create new tasks with due dates and descriptions.
 - Edit existing tasks.
 
+## Installing
+
+Run `cargo install --path .` to install `todoist` to path
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request.
