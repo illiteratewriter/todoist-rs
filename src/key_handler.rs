@@ -40,9 +40,9 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
         app.task_edit.description.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
-        if key.code == KeyCode::Char('j') {
+        if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
             app.task_edit.next();
-        } else if key.code == KeyCode::Char('k') {
+        } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up{
             app.task_edit.previous();
         } else if key.code == KeyCode::Enter {
             if let Some(selected) = app.task_edit.children_list_state.selected() {
@@ -79,9 +79,9 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
 }
 
 pub fn handle_projects(app: &mut App, key: KeyEvent) {
-    if key.code == KeyCode::Char('j') {
+    if key.code == KeyCode::Char('j') || key.code == KeyCode::Down{
         app.projects.next();
-    } else if key.code == KeyCode::Char('k') {
+    } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
         app.projects.previous();
     } else if key.code == KeyCode::Enter {
         if let Some(selected) = app.projects.state.selected() {
@@ -140,9 +140,9 @@ pub fn handle_new_tasks(
 }
 
 pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
-    if key.code == KeyCode::Char('j') {
+    if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
         app.tasks.next();
-    } else if key.code == KeyCode::Char('k') {
+    } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up{
         app.tasks.previous();
     } else if key.code == KeyCode::Enter {
         if let Some(selected) = app.tasks.state.selected() {
