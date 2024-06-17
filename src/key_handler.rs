@@ -42,7 +42,7 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
         if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
             app.task_edit.next();
-        } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up{
+        } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
             app.task_edit.previous();
         } else if key.code == KeyCode::Enter {
             if let Some(selected) = app.task_edit.children_list_state.selected() {
@@ -79,11 +79,16 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
 }
 
 pub fn handle_projects(app: &mut App, key: KeyEvent) {
-    if key.code == KeyCode::Char('j') || key.code == KeyCode::Down{
+    if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
         app.projects.next();
+        if let Some(selected) = app.projects.state.selected() {
+            let selected_id = app.projects.projects[selected].id.clone();
+            app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
+            app.tasks.filter_task_list();
+            app.projects.selected_project = Some(selected_id);
+        }
     } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
         app.projects.previous();
-    } else if key.code == KeyCode::Enter {
         if let Some(selected) = app.projects.state.selected() {
             let selected_id = app.projects.projects[selected].id.clone();
             app.tasks.filter = crate::tasks::Filter::ProjectId(selected_id.clone());
@@ -142,7 +147,7 @@ pub fn handle_new_tasks(
 pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
     if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
         app.tasks.next();
-    } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up{
+    } else if key.code == KeyCode::Char('k') || key.code == KeyCode::Up {
         app.tasks.previous();
     } else if key.code == KeyCode::Enter {
         if let Some(selected) = app.tasks.state.selected() {
@@ -178,6 +183,12 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             tokio::spawn(async move {
                 close_task(&client, task_id).await.unwrap();
             });
+        }
+    } else if key.code == KeyCode::Char('n') {
+        if let Some(selected) = app.projects.state.selected() {
+            let selected_id = app.projects.projects[selected].id.clone();
+            app.show_new_task = true;
+            app.new_task = new_task::NewTask::new(selected_id, None);
         }
     }
 }
