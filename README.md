@@ -2,7 +2,7 @@
 
 This is a terminal client for Todoist, (inspired by Spotify-TUI). The project is designed to be a keyboard-driven interface for managing your Todoist tasks directly from your terminal.
 
-![](imgs/app.gif)
+  <img src="imgs/app.gif" width="75%">
 
 ## Implemented Features
 
