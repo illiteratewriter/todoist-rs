@@ -134,7 +134,7 @@ pub struct Task {
     pub is_completed: bool,
     pub labels: Vec<String>,
     pub parent_id: Option<String>,
-    pub order: u64,
+    pub order: i32,
     pub priority: u8,
     pub due: Option<Due>,
     pub url: String,

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Section {
     pub id: String,
     pub project_id: String,
-    pub order: u16,
+    pub order: i32,
     pub name: String,
 }
 
