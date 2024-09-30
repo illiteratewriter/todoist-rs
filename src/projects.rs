@@ -14,7 +14,7 @@ pub struct Project {
     pub id: String,
     pub name: String,
     pub comment_count: u8,
-    pub order: u8,
+    pub order: i32,
     pub color: String,
     pub is_shared: bool,
     pub is_favorite: bool,
