@@ -53,6 +53,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         .constraints(vec![
             Constraint::Length(3),
             Constraint::Length(5),
+            Constraint::Length(3),
             Constraint::Min(1),
         ])
         .split(inner_area);
@@ -76,11 +77,22 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
+    app.task_edit
+        .due_string
+        .set_block(Block::default().borders(Borders::ALL).title("Due").fg(
+            match app.task_edit.currently_editing {
+                CurrentlyEditing::DueString => Color::Indexed(47),
+                _ => Color::White,
+            },
+        ));
+
     let content = app.task_edit.content.widget();
     let description = app.task_edit.description.widget();
+    let due_string = app.task_edit.due_string.widget();
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);
+    f.render_widget(due_string, vertical_split[2]);
 
     let close_modal_desc = Title::from(Line::from(vec![
         " To save, press ".into(),
@@ -100,7 +112,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     f.render_stateful_widget(
         task_list,
-        vertical_split[2],
+        vertical_split[3],
         &mut app.task_edit.children_list_state,
     );
 

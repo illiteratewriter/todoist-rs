@@ -10,7 +10,12 @@ use crate::{
     App,
 };
 
-pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
+pub fn handle_task_editor(
+    app: &mut App,
+    key: KeyEvent,
+    client: Client,
+    tx: std::sync::mpsc::Sender<Task>,
+) {
     if key.code == KeyCode::Esc {
         app.show_task_editor = !app.show_task_editor;
     } else if key.code == KeyCode::Enter {
@@ -19,17 +24,26 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
 
         app.tasks.tasks[index].content = app.task_edit.content.lines().join("\n");
         app.tasks.tasks[index].description = app.task_edit.description.lines().join("\n");
+
         let task = app.tasks.tasks[index].clone();
+
+        let task_string = serde_json::to_string(&task).unwrap();
+        let mut json: serde_json::Value = serde_json::from_str(&task_string).unwrap();
+
+        json["due_string"] = serde_json::Value::String(app.task_edit.due_string.lines().join("\n"));
+
         tokio::spawn(async move {
-            let _ = api_calls::update_task(&client, task).await;
+            let _ = api_calls::update_task(&client, json, task.id.to_string(), tx).await;
         });
     }
     if key.code == KeyCode::Tab {
         if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
             app.task_edit.currently_editing = task_edit::CurrentlyEditing::Description
         } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
+            app.task_edit.currently_editing = task_edit::CurrentlyEditing::DueString
+        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::DueString {
             app.task_edit.currently_editing = task_edit::CurrentlyEditing::ChildTasks
-        } else {
+        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
             app.task_edit.currently_editing = task_edit::CurrentlyEditing::Content
         }
         return;
@@ -39,6 +53,8 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
         app.task_edit.content.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
         app.task_edit.description.input(key);
+    } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::DueString {
+        app.task_edit.due_string.input(key);
     } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
         if key.code == KeyCode::Char('j') || key.code == KeyCode::Down {
             app.task_edit.next();
@@ -61,6 +77,11 @@ pub fn handle_task_editor(app: &mut App, key: KeyEvent, client: Client) {
                 app.task_edit = task_edit::TaskEdit {
                     content: TextArea::from(vec![selected.content.clone()]),
                     description: TextArea::from(vec![selected.description.clone()]),
+                    due_string: TextArea::from(vec![selected
+                        .due
+                        .as_ref()
+                        .map_or("", |d| &d.string)
+                        .to_string()]),
                     currently_editing: task_edit::CurrentlyEditing::Content,
                     children: children,
                     children_list_state: ListState::default(),
@@ -166,6 +187,11 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             app.task_edit = task_edit::TaskEdit {
                 content: TextArea::from(vec![selected.content.clone()]),
                 description: TextArea::from(vec![selected.description.clone()]),
+                due_string: TextArea::from(vec![selected
+                    .due
+                    .as_ref()
+                    .map_or("", |d| &d.string)
+                    .to_string()]),
                 currently_editing: task_edit::CurrentlyEditing::Content,
                 children: children,
                 children_list_state: ListState::default(),

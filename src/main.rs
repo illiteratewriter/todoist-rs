@@ -110,7 +110,7 @@ async fn main() -> Result<()> {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     if app.show_task_editor {
-                        handle_task_editor(&mut app, key, client.clone());
+                        handle_task_editor(&mut app, key, client.clone(), tx.clone());
                         continue;
                     }
 
@@ -163,7 +163,18 @@ async fn main() -> Result<()> {
 
         match rx.try_recv() {
             Ok(received) => {
-                app.tasks.tasks.push(received);
+                let mut task_exists = false;
+                for task in &mut app.tasks.tasks {
+                    if task.id == received.id {
+                        *task = received.clone();
+                        task_exists = true;
+                        break;
+                    }
+                }
+                
+                if !task_exists {
+                    app.tasks.tasks.push(received);
+                }
                 app.tasks.filter_task_list();
             }
             Err(TryRecvError::Empty) => continue,
