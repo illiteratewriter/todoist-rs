@@ -1,19 +1,29 @@
+use color_eyre::eyre::{Context, Result};
+use reqwest::Client;
+
 use crate::projects;
 use crate::sections;
 use crate::tasks;
 use crate::tasks::Task;
 
-pub async fn fetch_projects(
-    client: &reqwest::Client,
-) -> Result<Vec<projects::Project>, Box<dyn std::error::Error>> {
+pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
     let response = client
         .get("https://api.todoist.com/rest/v2/projects")
         .send()
-        .await?
-        .text()
-        .await?;
+        .await
+        .context("Failed to send request to fetch projects")?;
 
-    let serialized: Vec<projects::Project> = serde_json::from_str(&response)?;
+    if response.status().is_client_error() {
+        return Err(color_eyre::eyre::eyre!("Received a 400 error: {:?}. This would most likely be because of an incorrect token. Check your config file for token.", response.status()));
+    }
+
+    let response_text = response
+        .text()
+        .await
+        .context("Failed to read response text")?;
+
+    let serialized: Vec<projects::Project> = serde_json::from_str(&response_text)
+        .context("Failed to deserialize response into Vec<Project>")?;
     Ok(serialized)
 }
 
