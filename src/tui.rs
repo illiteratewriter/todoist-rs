@@ -49,8 +49,11 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .style(Style::default());
 
-    let title = Paragraph::new(Text::styled("Todoist", Style::default().fg(Color::Indexed(47))))
-        .block(title_block);
+    let title = Paragraph::new(Text::styled(
+        "Todoist",
+        Style::default().fg(Color::Indexed(47)),
+    ))
+    .block(title_block);
 
     f.render_widget(title, chunks[0]);
 

@@ -51,17 +51,22 @@ pub async fn fetch_sections(
 
 pub async fn update_task(
     client: &reqwest::Client,
-    task: Task,
+    json: serde_json::Value,
+    task_id: String,
+    tx: std::sync::mpsc::Sender<Task>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let task_string = serde_json::to_string(&task)?;
-    let json: serde_json::Value = serde_json::from_str(&task_string)?;
-
-    let _response = client
-        .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task.id))
+    let response = client
+        .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task_id))
         .json(&json)
         .send()
-        .await?;
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
 
+    let serialized: Task = serde_json::from_str(&response).unwrap();
+    tx.send(serialized).unwrap();
     Ok(())
 }
 

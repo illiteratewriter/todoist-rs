@@ -5,6 +5,7 @@ use tui_textarea::TextArea;
 pub struct TaskEdit<'a> {
     pub content: TextArea<'a>,
     pub description: TextArea<'a>,
+    pub due_string: TextArea<'a>,
     pub currently_editing: CurrentlyEditing,
     pub children: Vec<usize>,
     pub children_list_state: ListState,
@@ -54,5 +55,6 @@ pub enum CurrentlyEditing {
     #[default]
     Content,
     Description,
+    DueString,
     ChildTasks,
 }
