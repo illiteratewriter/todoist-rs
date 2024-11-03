@@ -34,6 +34,9 @@ pub fn help(f: &mut Frame) {
             "+",
             "Press + while on a project to add task to the project",
         ]),
+        Row::new(vec!["o", "Overdue tasks"]),
+        Row::new(vec!["a", "All tasks"]),
+
     ];
     let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
     let table = Table::new(rows, widths)
