@@ -49,7 +49,7 @@ pub fn help(f: &mut Frame) {
         .highlight_symbol(">>")
         .block(block);
 
-    let area = utils::centered_rect(60, 20, f.size());
+    let area = utils::centered_rect(75, 25, f.size());
     f.render_widget(Clear, area); //this clears out the background
     f.render_widget(table, area);
 }
