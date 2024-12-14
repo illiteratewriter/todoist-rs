@@ -142,7 +142,7 @@ async fn main() -> Result<()> {
                         app.tasks.filter = Filter::All;
                         app.tasks.filter_task_list();
                         app.projects.unselect();
-                    } 
+                    }
 
                     if app.show_help {
                         continue;
@@ -175,7 +175,7 @@ async fn main() -> Result<()> {
                         break;
                     }
                 }
-                
+
                 if !task_exists {
                     app.tasks.tasks.push(received);
                 }
