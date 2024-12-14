@@ -13,6 +13,23 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     f.render_widget(Clear, area);
 
+    let inner_area = area.inner(&Margin {
+        vertical: 1,
+        horizontal: 1,
+    });
+
+    let vertical_split = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![
+            Constraint::Length(3),
+            Constraint::Length(5),
+            Constraint::Length(3),
+            Constraint::Min(1),
+        ])
+        .split(inner_area);
+
+    let task_list_width = vertical_split[1].width as usize;
+
     let tasks_block = Block::default()
         .title(Title::from(" Sub tasks ".bold()).alignment(Alignment::Left))
         .borders(Borders::ALL)
@@ -29,6 +46,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             &task.content,
             task.is_completed,
             children,
+            task_list_width - 4,
         ))
     }
 
@@ -42,21 +60,6 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         )
         .highlight_symbol(">")
         .highlight_spacing(HighlightSpacing::Always);
-
-    let inner_area = area.inner(&Margin {
-        vertical: 1,
-        horizontal: 1,
-    });
-
-    let vertical_split = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(3),
-            Constraint::Length(5),
-            Constraint::Length(3),
-            Constraint::Min(1),
-        ])
-        .split(inner_area);
 
     app.task_edit
         .content

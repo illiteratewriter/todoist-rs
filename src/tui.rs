@@ -117,6 +117,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         });
 
     let mut task_list_item = Vec::new();
+    let task_list_width = inner_layout[1].width as usize;
     for i in &app.tasks.display_tasks {
         let task = &app.tasks.tasks[*i];
         let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
@@ -124,6 +125,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             &task.content,
             task.is_completed,
             children,
+            task_list_width - 4,
         ))
     }
 
