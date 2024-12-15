@@ -12,7 +12,20 @@ This is a terminal client for Todoist, (inspired by Spotify-TUI). The project is
 
 ## Installing
 
-Run `cargo install --path . --locked` to install `todoist` to path
+1. Install cargo if you haven't done already
+   On Linux and macOS systems, this is done as follows:
+   ```
+   curl https://sh.rustup.rs -sSf | sh
+   ```
+2. Clone this repository
+   ```
+   git clone https://github.com/illiteratewriter/todoist-rs.git
+   ```
+3. Run
+   ```
+   cargo install --path . --locked
+   ```
+   to install _todoist_ to path
 
 ## Contributing
 
