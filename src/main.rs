@@ -106,7 +106,7 @@ async fn main() -> Result<()> {
         let mut app = app.lock().await;
         terminal.draw(|frame| tui::ui(frame, &mut app))?;
 
-        if event::poll(std::time::Duration::from_millis(16))? {
+        if event::poll(std::time::Duration::from_millis(150))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     if app.show_task_editor {
