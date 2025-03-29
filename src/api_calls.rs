@@ -5,6 +5,7 @@ use crate::projects;
 use crate::sections;
 use crate::tasks;
 use crate::tasks::Task;
+use crate::TaskResult;
 
 pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
     let response = client
@@ -63,21 +64,58 @@ pub async fn update_task(
     client: &reqwest::Client,
     json: serde_json::Value,
     task_id: String,
-    tx: std::sync::mpsc::Sender<Task>,
+    tx: std::sync::mpsc::Sender<TaskResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let response = client
+    let response = match client
         .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task_id))
         .json(&json)
         .send()
         .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
+    {
+        Ok(resp) => resp,
+        Err(e) => {
+            let error_msg = format!("Network error: {}", e);
+            tx.send(TaskResult::Error(error_msg)).unwrap();
+            return Err(e.into());
+        }
+    };
 
-    let serialized: Task = serde_json::from_str(&response).unwrap();
-    tx.send(serialized).unwrap();
-    Ok(())
+    let response_ref = &response;
+
+    match response_ref.error_for_status_ref() {
+        Ok(resp) => resp,
+        Err(e) => {
+            let status_code = e.status().unwrap_or_default();
+            let response_text = response.text().await.unwrap_or_default();
+            let error_msg = format!("API error: {} ({}) \n\n {}", status_code, e, response_text);
+            tx.send(TaskResult::Error(error_msg)).unwrap();
+            return Err(e.into());
+        }
+    };
+
+    let response_text = match response.text().await {
+        Ok(text) => text,
+        Err(e) => {
+            let error_msg = format!("Failed to read response: {}", e);
+            tx.send(TaskResult::Error(error_msg)).unwrap();
+            return Err(e.into());
+        }
+    };
+
+    match serde_json::from_str::<Task>(&response_text) {
+        Ok(serialized) => {
+            tx.send(TaskResult::Task(serialized)).unwrap();
+            Ok(())
+        }
+        Err(e) => {
+            let error_msg = format!(
+                "Failed to parse response: {} (Response was: {})",
+                e, response_text
+            );
+            tx.send(TaskResult::Error(error_msg)).unwrap();
+            Err(e.into())
+        }
+    }
 }
 
 pub async fn close_task(
@@ -94,7 +132,7 @@ pub async fn close_task(
 pub async fn create_task<'a>(
     client: &reqwest::Client,
     json: serde_json::Value,
-    tx: std::sync::mpsc::Sender<Task>,
+    tx: std::sync::mpsc::Sender<TaskResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = client
         .post("https://api.todoist.com/rest/v2/tasks")
@@ -107,6 +145,6 @@ pub async fn create_task<'a>(
         .unwrap();
 
     let serialized: Task = serde_json::from_str(&response).unwrap();
-    tx.send(serialized).unwrap();
+    tx.send(TaskResult::Task(serialized)).unwrap();
     Ok(())
 }
