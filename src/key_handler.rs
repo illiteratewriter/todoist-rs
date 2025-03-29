@@ -5,16 +5,14 @@ use tui_textarea::TextArea;
 
 use crate::{
     api_calls::{self, close_task, create_task},
-    new_task, task_edit,
-    tasks::Task,
-    App,
+    new_task, task_edit, App, TaskResult,
 };
 
 pub fn handle_task_editor(
     app: &mut App,
     key: KeyEvent,
     client: Client,
-    tx: std::sync::mpsc::Sender<Task>,
+    tx: std::sync::mpsc::Sender<TaskResult>,
 ) {
     if key.code == KeyCode::Esc {
         app.show_task_editor = !app.show_task_editor;
@@ -131,7 +129,7 @@ pub fn handle_new_tasks(
     app: &mut App,
     key: KeyEvent,
     client: Client,
-    tx: std::sync::mpsc::Sender<Task>,
+    tx: std::sync::mpsc::Sender<TaskResult>,
 ) {
     if key.code == KeyCode::Esc {
         app.show_new_task = !app.show_new_task;

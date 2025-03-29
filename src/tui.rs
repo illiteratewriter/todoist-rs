@@ -9,6 +9,7 @@ use ratatui::{
     },
 };
 
+mod error;
 mod help;
 mod new_task;
 mod task_editor;
@@ -153,5 +154,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     if app.show_new_task {
         new_task::editor(f, app)
+    }
+
+    if app.show_error {
+        error::render_error_modal(f, app);
     }
 }

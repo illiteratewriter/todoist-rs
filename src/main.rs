@@ -42,6 +42,7 @@ pub enum CurrentFocus {
     Projects,
     Tasks,
     Help,
+    Error,
 }
 
 #[derive(Debug, Default)]
@@ -57,17 +58,35 @@ pub struct App<'a> {
     pub task_edit: task_edit::TaskEdit<'a>,
     pub show_new_task: bool,
     pub new_task: NewTask<'a>,
+    pub error_message: Option<String>,
+    pub show_error: bool,
 }
 
 impl<'a> App<'a> {
     pub fn new() -> App<'a> {
         App::default()
     }
+
+    pub fn set_error_message(&mut self, message: String) {
+        self.error_message = Some(message);
+        self.show_error = true;
+    }
+
+    pub fn clear_error(&mut self) {
+        self.error_message = None;
+        self.show_error = false;
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum TaskResult {
+    Task(Task),
+    Error(String),
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let (tx, rx): (Sender<Task>, Receiver<Task>) = mpsc::channel();
+    let (tx, rx): (Sender<TaskResult>, Receiver<TaskResult>) = mpsc::channel();
     let bearer_token = get_token();
     let mut headers = HeaderMap::new();
     headers.insert(
@@ -119,11 +138,11 @@ async fn main() -> Result<()> {
                         continue;
                     }
 
-                    if app.show_new_task {
+                    if app.show_error {
                         if key.code == KeyCode::Esc {
-                            app.show_new_task = false;
-                        } else if key.code == KeyCode::Enter {
+                            app.clear_error();
                         }
+                        continue;
                     }
 
                     if key.code == KeyCode::Char('h') {
@@ -166,21 +185,26 @@ async fn main() -> Result<()> {
         }
 
         match rx.try_recv() {
-            Ok(received) => {
-                let mut task_exists = false;
-                for task in &mut app.tasks.tasks {
-                    if task.id == received.id {
-                        *task = received.clone();
-                        task_exists = true;
-                        break;
+            Ok(received) => match received {
+                TaskResult::Task(task) => {
+                    let mut task_exists = false;
+                    for existing_task in &mut app.tasks.tasks {
+                        if existing_task.id == task.id {
+                            *existing_task = task.clone();
+                            task_exists = true;
+                            break;
+                        }
                     }
-                }
 
-                if !task_exists {
-                    app.tasks.tasks.push(received);
+                    if !task_exists {
+                        app.tasks.tasks.push(task);
+                    }
+                    app.tasks.filter_task_list();
                 }
-                app.tasks.filter_task_list();
-            }
+                TaskResult::Error(error_msg) => {
+                    app.set_error_message(error_msg);
+                }
+            },
             Err(TryRecvError::Empty) => continue,
             Err(TryRecvError::Disconnected) => break,
         }
