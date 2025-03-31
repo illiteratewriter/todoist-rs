@@ -129,6 +129,17 @@ pub async fn close_task(
     Ok(())
 }
 
+pub async fn delete_task(
+    client: &reqwest::Client,
+    task_id: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let url = format!("https://api.todoist.com/rest/v2/tasks/{}", task_id);
+
+    let _response = client.delete(url).send().await?;
+
+    Ok(())
+}
+
 pub async fn create_task<'a>(
     client: &reqwest::Client,
     json: serde_json::Value,

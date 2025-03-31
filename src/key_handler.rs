@@ -4,7 +4,7 @@ use reqwest::Client;
 use tui_textarea::TextArea;
 
 use crate::{
-    api_calls::{self, close_task, create_task},
+    api_calls::{self, close_task, create_task, delete_task},
     new_task, task_edit, App, TaskResult,
 };
 
@@ -213,6 +213,18 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
             let selected_id = app.projects.projects[selected].id.clone();
             app.show_new_task = true;
             app.new_task = new_task::NewTask::new(selected_id, None);
+        }
+    } else if key.code == KeyCode::Char('d') {
+        if let Some(selected) = app.tasks.state.selected() {
+            let index = app.tasks.display_tasks[selected];
+            let task_id = app.tasks.tasks[index].id.clone();
+            app.tasks.state = ListState::default();
+            app.tasks.display_tasks.remove(selected);
+            app.tasks.tasks.remove(index);
+            app.tasks.filter_task_list();
+            tokio::spawn(async move {
+                delete_task(&client, task_id).await.unwrap();
+            });
         }
     }
 }
