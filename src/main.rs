@@ -260,7 +260,7 @@ fn get_token() -> String {
                     number += 1;
                 }
 
-                println!("\nEnter your Client key:");
+                println!("\nEnter your API token:");
                 stdin().read_line(&mut client_key).unwrap();
                 client_key = client_key.trim().to_string(); // Trim the newline character
 
