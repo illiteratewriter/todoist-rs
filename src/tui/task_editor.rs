@@ -44,6 +44,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         let children: u16 = *app.tasks.tasks_with_children.get(&task.id).unwrap_or(&0);
         task_list_item.push(utils::generate_list_item(
             &task.content,
+            &task.due,
             task.is_completed,
             children,
             task_list_width - 4,
