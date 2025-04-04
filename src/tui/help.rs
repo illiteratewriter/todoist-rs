@@ -31,6 +31,10 @@ pub fn help(f: &mut Frame) {
             "Press x while a task is highlighted to mark as done",
         ]),
         Row::new(vec![
+            "d",
+            "Press d while a task is highlighted to delete the task",
+        ]),
+        Row::new(vec![
             "+",
             "Press + while on a project to add task to the project",
         ]),
