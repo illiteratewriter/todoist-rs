@@ -9,7 +9,11 @@ use ratatui::{
 use crate::{task_edit::CurrentlyEditing, tui::utils, App};
 
 pub fn editor(f: &mut Frame, app: &mut App) {
-    let area = utils::centered_rect(60, 40, f.size());
+    let area = utils::centered_rect(
+        Constraint::Percentage(60),
+        Constraint::Percentage(40),
+        f.size(),
+    );
 
     f.render_widget(Clear, area);
 

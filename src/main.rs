@@ -162,7 +162,9 @@ async fn main() -> Result<()> {
                         app.tasks.filter_task_list();
                         app.projects.unselect();
                     } else if key.code == KeyCode::Char('p') {
-                        app.tasks.sort_tasks();
+                        app.tasks.sort_tasks(tasks::SortCriterion::Priority);
+                    } else if key.code == KeyCode::Char('d') {
+                        app.tasks.sort_tasks(tasks::SortCriterion::Date);
                     }
 
                     if app.show_help {

@@ -14,6 +14,12 @@ pub struct Tasks {
     pub display_tasks: Vec<usize>,
 }
 
+#[derive(Debug)]
+pub enum SortCriterion {
+    Priority,
+    Date,
+}
+
 impl Tasks {
     pub fn new(items: Vec<Task>) -> Tasks {
         Tasks {
@@ -36,13 +42,28 @@ impl Tasks {
         }
     }
 
-    pub fn sort_tasks(&mut self) {
-        // sort display tasks by task priority in descending order
-        self.display_tasks.sort_by(|a, b| {
-            let task_a = &self.tasks[*a];
-            let task_b = &self.tasks[*b];
-            task_b.priority.cmp(&task_a.priority) // Reverse the order
-        });
+    pub fn sort_tasks(&mut self, criterion: SortCriterion) {
+        match criterion {
+            SortCriterion::Priority => {
+                self.display_tasks.sort_by(|a, b| {
+                    let task_a = &self.tasks[*a];
+                    let task_b = &self.tasks[*b];
+                    task_b.priority.cmp(&task_a.priority)
+                });
+            }
+            SortCriterion::Date => {
+                self.display_tasks.sort_by(|a, b| {
+                    let task_a = &self.tasks[*a];
+                    let task_b = &self.tasks[*b];
+                    match (&task_a.due, &task_b.due) {
+                        (Some(due_a), Some(due_b)) => due_a.date.cmp(&due_b.date),
+                        (Some(_), None) => std::cmp::Ordering::Less,
+                        (None, Some(_)) => std::cmp::Ordering::Greater,
+                        (None, None) => std::cmp::Ordering::Equal,
+                    }
+                });
+            }
+        }
     }
 
     pub fn filter_task_list(&mut self) {
