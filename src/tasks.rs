@@ -36,6 +36,15 @@ impl Tasks {
         }
     }
 
+    pub fn sort_tasks(&mut self) {
+        // sort display tasks by task priority in descending order
+        self.display_tasks.sort_by(|a, b| {
+            let task_a = &self.tasks[*a];
+            let task_b = &self.tasks[*b];
+            task_b.priority.cmp(&task_a.priority) // Reverse the order
+        });
+    }
+
     pub fn filter_task_list(&mut self) {
         self.state = ListState::default();
         self.display_tasks = Vec::new();

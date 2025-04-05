@@ -45,6 +45,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
         task_list_item.push(utils::generate_list_item(
             &task.content,
             &task.due,
+            task.priority,
             task.is_completed,
             children,
             task_list_width - 4,

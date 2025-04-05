@@ -161,6 +161,8 @@ async fn main() -> Result<()> {
                         app.tasks.filter = Filter::All;
                         app.tasks.filter_task_list();
                         app.projects.unselect();
+                    } else if key.code == KeyCode::Char('p') {
+                        app.tasks.sort_tasks();
                     }
 
                     if app.show_help {

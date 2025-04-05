@@ -22,12 +22,23 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
 pub fn generate_list_item<'a>(
     content: &String,
     due: &Option<Due>,
+    priority: u8,
     is_completed: bool,
     children: u16,
     width: usize,
 ) -> ListItem<'a> {
+
+    let color = match priority {
+        1 => "P4",
+        2 => "P3",
+        3 => "P2",
+        4 => "P1",
+        _ => "",
+    };
+
+
     let formatted_text = format!(
-        "[{}] {} {} {}",
+        "[{}] {} {} {} - {}",
         if is_completed { "✓" } else { " " },
         if children > 0 { "⤷" } else { " " },
         content,
@@ -35,13 +46,16 @@ pub fn generate_list_item<'a>(
             format!(" (due: {})", due.string)
         } else {
             String::new()
-        }
+        },
+        color
     );
 
     let wrapped_text = fill(&formatted_text, width);
 
+    // show colors according to priority from 1 to 4
+
     ListItem::new(Text::styled(
         wrapped_text,
-        Style::default().fg(Color::Yellow),
+        Style::default().fg(Color::White),
     ))
 }
