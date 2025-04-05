@@ -40,7 +40,13 @@ pub fn help(f: &mut Frame) {
         ]),
         Row::new(vec!["o", "Overdue tasks"]),
         Row::new(vec!["a", "All tasks"]),
+        Row::new(vec!["p", "Sort by priority"]),
+        Row::new(vec!["d", "Sort by date"]),
+        Row::new(vec!["Tab", "Switch between projects and tasks"]),
     ];
+    let row_count = rows.len();
+    let total_height = row_count + 5;
+
     let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
     let table = Table::new(rows, widths)
         .header(
@@ -52,7 +58,11 @@ pub fn help(f: &mut Frame) {
         .highlight_symbol(">>")
         .block(block);
 
-    let area = utils::centered_rect(60, 20, f.size());
-    f.render_widget(Clear, area); //this clears out the background
+    let area = utils::centered_rect(
+        Constraint::Percentage(60),
+        Constraint::Length(total_height as u16),
+        f.size(),
+    );
+    f.render_widget(Clear, area);
     f.render_widget(table, area);
 }
