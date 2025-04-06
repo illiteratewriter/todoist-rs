@@ -3,10 +3,7 @@ use std::io::{self, stdout, Stdout};
 use crossterm::{execute, terminal::*};
 use ratatui::{
     prelude::*,
-    widgets::{
-        block::{Position, Title},
-        Block, Borders, HighlightSpacing, List, ListItem, Paragraph,
-    },
+    widgets::{Block, Borders, HighlightSpacing, List, ListItem, Paragraph},
 };
 
 mod error;
@@ -39,7 +36,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             Constraint::Min(1),
             Constraint::Length(3),
         ])
-        .split(f.size());
+        .split(f.area());
 
     let inner_layout = Layout::default()
         .direction(Direction::Horizontal)
@@ -78,7 +75,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     }
 
     let my_projects_block = Block::default()
-        .title(Title::from(" My projects ".bold()).alignment(Alignment::Left))
+        .title(" My projects ".bold())
         .borders(Borders::ALL)
         .fg(match app.current_focus {
             CurrentFocus::Projects => Color::Indexed(47),
@@ -99,18 +96,11 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         Filter::Overdue => " Overdue ",
     };
 
-    let instructions = Title::from(Line::from(vec![
-        " For help, press ".into(),
-        "h ".blue().bold(),
-    ]));
+    let instructions = Line::from(vec![" For help, press ".into(), "h ".blue().bold()]);
 
     let tasks_block = Block::default()
-        .title(Title::from(task_title.bold()).alignment(Alignment::Left))
-        .title(
-            instructions
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
+        .title(task_title.bold())
+        .title_bottom(instructions.centered())
         .borders(Borders::ALL)
         .fg(match app.current_focus {
             CurrentFocus::Tasks => Color::Indexed(47),

@@ -1,9 +1,6 @@
 use ratatui::{
     prelude::*,
-    widgets::{
-        block::{Position, Title},
-        Block, Borders, Clear, HighlightSpacing, List,
-    },
+    widgets::{Block, Borders, Clear, HighlightSpacing, List},
 };
 
 use crate::{task_edit::CurrentlyEditing, tui::utils, App};
@@ -12,12 +9,12 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     let area = utils::centered_rect(
         Constraint::Percentage(60),
         Constraint::Percentage(40),
-        f.size(),
+        f.area(),
     );
 
     f.render_widget(Clear, area);
 
-    let inner_area = area.inner(&Margin {
+    let inner_area = area.inner(Margin {
         vertical: 1,
         horizontal: 1,
     });
@@ -35,7 +32,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     let task_list_width = vertical_split[1].width as usize;
 
     let tasks_block = Block::default()
-        .title(Title::from(" Sub tasks ".bold()).alignment(Alignment::Left))
+        .title(" Sub tasks ")
         .borders(Borders::ALL)
         .fg(match app.task_edit.currently_editing {
             CurrentlyEditing::ChildTasks => Color::Indexed(47),
@@ -69,7 +66,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     app.task_edit
         .content
-        .set_block(Block::default().borders(Borders::ALL).title("Task").fg(
+        .set_block(Block::default().borders(Borders::ALL).title(" Task ").fg(
             match app.task_edit.currently_editing {
                 CurrentlyEditing::Content => Color::Indexed(47),
                 _ => Color::White,
@@ -79,7 +76,7 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     app.task_edit.description.set_block(
         Block::default()
             .borders(Borders::ALL)
-            .title("Description")
+            .title(" Description ")
             .fg(match app.task_edit.currently_editing {
                 CurrentlyEditing::Description => Color::Indexed(47),
                 _ => Color::White,
@@ -88,35 +85,31 @@ pub fn editor(f: &mut Frame, app: &mut App) {
 
     app.task_edit
         .due_string
-        .set_block(Block::default().borders(Borders::ALL).title("Due").fg(
+        .set_block(Block::default().borders(Borders::ALL).title(" Due ").fg(
             match app.task_edit.currently_editing {
                 CurrentlyEditing::DueString => Color::Indexed(47),
                 _ => Color::White,
             },
         ));
 
-    let content = app.task_edit.content.widget();
-    let description = app.task_edit.description.widget();
-    let due_string = app.task_edit.due_string.widget();
+    let content = &app.task_edit.content;
+    let description = &app.task_edit.description;
+    let due_string = &app.task_edit.due_string;
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);
     f.render_widget(due_string, vertical_split[2]);
 
-    let close_modal_desc = Title::from(Line::from(vec![
+    let close_modal_desc = Line::from(vec![
         " To save, press ".into(),
         "Enter".blue().bold(),
         " and to close, press ".into(),
         "Esc".blue().bold(),
-    ]));
+    ]);
 
     let block = Block::default()
         .title(" Edit task ")
-        .title(
-            close_modal_desc
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
+        .title_bottom(close_modal_desc.centered())
         .borders(Borders::ALL);
 
     f.render_stateful_widget(
