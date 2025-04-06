@@ -57,9 +57,9 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             }),
     );
 
-    let content = app.new_task.content.widget();
-    let description = app.new_task.description.widget();
-    let due_string = app.new_task.due_string.widget();
+    let content = &app.new_task.content;
+    let description = &app.new_task.description;
+    let due_string = &app.new_task.due_string;
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);

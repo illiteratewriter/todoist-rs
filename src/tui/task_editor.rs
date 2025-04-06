@@ -92,9 +92,9 @@ pub fn editor(f: &mut Frame, app: &mut App) {
             },
         ));
 
-    let content = app.task_edit.content.widget();
-    let description = app.task_edit.description.widget();
-    let due_string = app.task_edit.due_string.widget();
+    let content = &app.task_edit.content;
+    let description = &app.task_edit.description;
+    let due_string = &app.task_edit.due_string;
 
     f.render_widget(content, vertical_split[0]);
     f.render_widget(description, vertical_split[1]);

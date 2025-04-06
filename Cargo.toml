@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.35"
 color-eyre = "0.6.3"
-crossterm = "0.27.0"
+crossterm = "0.28.1"
 dirs = "5.0.1"
 ratatui = "0.29.0"
 reqwest = { version = "0.11.24", features = ["json"] }
@@ -16,4 +16,4 @@ serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 textwrap = "0.16.1"
 tokio = { version = "1.36.0", features = ["full"] }
-tui-textarea = "0.4.0"
+tui-textarea = "0.7.0"
