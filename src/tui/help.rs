@@ -1,26 +1,19 @@
 use ratatui::{
     prelude::*,
-    widgets::{
-        block::{Position, Title},
-        Block, Borders, Clear, Row, Table,
-    },
+    widgets::{Block, Borders, Clear, Row, Table},
 };
 
 use crate::tui::utils;
 
 pub fn help(f: &mut Frame) {
-    let close_help = Title::from(Line::from(vec![
+    let close_help = Line::from(vec![
         " To close, press ".into(),
         "h".blue().bold(),
         " again ".into(),
-    ]));
+    ]);
     let block = Block::default()
         .title(" Help ")
-        .title(
-            close_help
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
+        .title_bottom(close_help.centered())
         .borders(Borders::ALL);
 
     let rows = [
@@ -54,14 +47,12 @@ pub fn help(f: &mut Frame) {
                 .style(Style::new().bold())
                 .bottom_margin(1),
         )
-        .highlight_style(Style::new().reversed())
-        .highlight_symbol(">>")
         .block(block);
 
     let area = utils::centered_rect(
         Constraint::Percentage(60),
         Constraint::Length(total_height as u16),
-        f.size(),
+        f.area(),
     );
     f.render_widget(Clear, area);
     f.render_widget(table, area);

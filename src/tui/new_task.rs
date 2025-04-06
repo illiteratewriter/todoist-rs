@@ -1,9 +1,6 @@
 use ratatui::{
     prelude::*,
-    widgets::{
-        block::{Position, Title},
-        Block, Borders, Clear,
-    },
+    widgets::{Block, Borders, Clear},
 };
 
 use crate::{new_task::CurrentlyEditing, tui::utils, App};
@@ -12,12 +9,12 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     let area = utils::centered_rect(
         Constraint::Percentage(60),
         Constraint::Percentage(40),
-        f.size(),
+        f.area(),
     );
 
     f.render_widget(Clear, area);
 
-    let inner_area = area.inner(&Margin {
+    let inner_area = area.inner(Margin {
         vertical: 1,
         horizontal: 1,
     });
@@ -68,20 +65,16 @@ pub fn editor(f: &mut Frame, app: &mut App) {
     f.render_widget(description, vertical_split[1]);
     f.render_widget(due_string, vertical_split[2]);
 
-    let close_modal_desc = Title::from(Line::from(vec![
+    let close_modal_desc = Line::from(vec![
         " To save, press ".into(),
         "Enter".blue().bold(),
         " and to close, press ".into(),
         "Esc".blue().bold(),
-    ]));
+    ]);
 
     let block = Block::default()
         .title(" New task ")
-        .title(
-            close_modal_desc
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
+        .title_bottom(close_modal_desc.centered())
         .borders(Borders::ALL);
 
     f.render_widget(block, area);

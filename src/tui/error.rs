@@ -1,10 +1,4 @@
-use ratatui::{
-    prelude::*,
-    widgets::{
-        block::{Position, Title},
-        Borders,
-    },
-};
+use ratatui::{prelude::*, widgets::Borders};
 
 use crate::App;
 
@@ -14,7 +8,7 @@ pub fn render_error_modal(f: &mut Frame, app: &mut App) {
         None => return,
     };
 
-    let area = f.size();
+    let area = f.area();
 
     // Create a slightly smaller area for the modal
     let modal_width = std::cmp::min(60, area.width.saturating_sub(10));
@@ -27,19 +21,15 @@ pub fn render_error_modal(f: &mut Frame, app: &mut App) {
         modal_height,
     );
 
-    let close_error = Title::from(Line::from(vec![
+    let close_error = Line::from(vec![
         " Press ".into(),
         "Esc".blue().bold(),
         " to close ".into(),
-    ]));
+    ]);
 
     let block = ratatui::widgets::Block::default()
         .title(" Error ")
-        .title(
-            close_error
-                .alignment(Alignment::Center)
-                .position(Position::Bottom),
-        )
+        .title_bottom(close_error.centered())
         .borders(Borders::ALL)
         .border_style(ratatui::style::Style::default().fg(ratatui::style::Color::Red));
 

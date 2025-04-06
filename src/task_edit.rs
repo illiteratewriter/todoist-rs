@@ -79,16 +79,16 @@ impl<'a> TaskEdit<'a> {
     pub fn update_cursor_styles(&mut self) {
         let active_style = Style::default().add_modifier(Modifier::REVERSED);
         let default_style = Style::default();
-    
+
         self.content.set_cursor_style(default_style);
         self.description.set_cursor_style(default_style);
         self.due_string.set_cursor_style(default_style);
-    
+
         match self.currently_editing {
             CurrentlyEditing::Content => self.content.set_cursor_style(active_style),
             CurrentlyEditing::Description => self.description.set_cursor_style(active_style),
             CurrentlyEditing::DueString => self.due_string.set_cursor_style(active_style),
-            CurrentlyEditing::ChildTasks => {} 
+            CurrentlyEditing::ChildTasks => {}
         }
     }
 }
