@@ -1,7 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::widgets::ListState;
 use reqwest::Client;
-use tui_textarea::TextArea;
 
 use crate::{
     api_calls::{self, close_task, create_task, delete_task},
@@ -44,6 +43,7 @@ pub fn handle_task_editor(
         } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
             app.task_edit.currently_editing = task_edit::CurrentlyEditing::Content
         }
+        app.task_edit.update_cursor_styles();
         return;
     }
 
@@ -72,19 +72,14 @@ pub fn handle_task_editor(
                     }
                 }
 
-                app.task_edit = task_edit::TaskEdit {
-                    content: TextArea::from(vec![selected.content.clone()]),
-                    description: TextArea::from(vec![selected.description.clone()]),
-                    due_string: TextArea::from(vec![selected
-                        .due
-                        .as_ref()
-                        .map_or("", |d| &d.string)
-                        .to_string()]),
-                    currently_editing: task_edit::CurrentlyEditing::Content,
-                    children: children,
-                    children_list_state: ListState::default(),
-                    current_task_index: index,
-                }
+                app.task_edit = task_edit::TaskEdit::new(
+                    selected.content.clone(),
+                    selected.description.clone(),
+                    selected.due.as_ref().map_or("", |d| &d.string).to_string(),
+                    children,
+                    index,
+                    task_edit::CurrentlyEditing::Content,
+                );
             }
         } else if key.code == KeyCode::Char('n') {
             let task = app.tasks.tasks[app.task_edit.current_task_index].clone();
@@ -182,19 +177,14 @@ pub fn handle_tasks(app: &mut App, key: KeyEvent, client: Client) {
                 }
             }
 
-            app.task_edit = task_edit::TaskEdit {
-                content: TextArea::from(vec![selected.content.clone()]),
-                description: TextArea::from(vec![selected.description.clone()]),
-                due_string: TextArea::from(vec![selected
-                    .due
-                    .as_ref()
-                    .map_or("", |d| &d.string)
-                    .to_string()]),
-                currently_editing: task_edit::CurrentlyEditing::Content,
-                children: children,
-                children_list_state: ListState::default(),
-                current_task_index: index,
-            }
+            app.task_edit = task_edit::TaskEdit::new(
+                selected.content.clone(),
+                selected.description.clone(),
+                selected.due.as_ref().map_or("", |d| &d.string).to_string(),
+                children,
+                index,
+                task_edit::CurrentlyEditing::Content,
+            );
         }
     } else if key.code == KeyCode::Char('x') {
         if let Some(selected) = app.tasks.state.selected() {

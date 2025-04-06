@@ -1,4 +1,7 @@
-use ratatui::widgets::ListState;
+use ratatui::{
+    style::{Modifier, Style},
+    widgets::ListState,
+};
 use tui_textarea::TextArea;
 
 #[derive(Debug, Default, Clone)]
@@ -13,6 +16,30 @@ pub struct TaskEdit<'a> {
 }
 
 impl<'a> TaskEdit<'a> {
+    pub fn new(
+        content: String,
+        description: String,
+        due_string: String,
+        children: Vec<usize>,
+        current_task_index: usize,
+        currently_editing: CurrentlyEditing,
+    ) -> Self {
+        let mut task_edit = TaskEdit {
+            content: TextArea::from(vec![content]),
+            description: TextArea::from(vec![description]),
+            due_string: TextArea::from(vec![due_string]),
+            currently_editing,
+            children,
+            children_list_state: ListState::default(),
+            current_task_index,
+        };
+
+        // Automatically update cursor styles
+        task_edit.update_cursor_styles();
+
+        task_edit
+    }
+
     pub fn next(&mut self) {
         if self.children.len() == 0 {
             self.children_list_state.select(None);
@@ -47,6 +74,22 @@ impl<'a> TaskEdit<'a> {
             None => 0,
         };
         self.children_list_state.select(Some(i));
+    }
+
+    pub fn update_cursor_styles(&mut self) {
+        let active_style = Style::default().add_modifier(Modifier::REVERSED);
+        let default_style = Style::default();
+    
+        self.content.set_cursor_style(default_style);
+        self.description.set_cursor_style(default_style);
+        self.due_string.set_cursor_style(default_style);
+    
+        match self.currently_editing {
+            CurrentlyEditing::Content => self.content.set_cursor_style(active_style),
+            CurrentlyEditing::Description => self.description.set_cursor_style(active_style),
+            CurrentlyEditing::DueString => self.due_string.set_cursor_style(active_style),
+            CurrentlyEditing::ChildTasks => {} 
+        }
     }
 }
 
