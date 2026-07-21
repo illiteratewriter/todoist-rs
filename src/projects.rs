@@ -13,14 +13,22 @@ pub struct Projects {
 pub struct Project {
     pub id: String,
     pub name: String,
+    #[serde(default)]
     pub comment_count: u8,
+    #[serde(default)]
     pub order: i32,
+    #[serde(default)]
     pub color: String,
+    #[serde(default)]
     pub is_shared: bool,
+    #[serde(default)]
     pub is_favorite: bool,
+    #[serde(default)]
     pub is_inbox_project: bool,
+    #[serde(default)]
     pub is_team_inbox: bool,
     pub view_style: ListType,
+    #[serde(default)]
     pub url: String,
     pub parent_id: Option<String>,
 }

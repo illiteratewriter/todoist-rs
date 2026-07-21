@@ -156,22 +156,32 @@ pub enum Filter {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub project_id: String,
     pub section_id: Option<String>,
+    #[serde(default)]
     pub content: String,
+    #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub is_completed: bool,
+    #[serde(default)]
     pub labels: Vec<String>,
     pub parent_id: Option<String>,
+    #[serde(default)]
     pub order: i32,
+    #[serde(default)]
     pub priority: u8,
     pub due: Option<Due>,
+    #[serde(default)]
     pub url: String,
+    #[serde(default)]
     pub comment_count: u16,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default)]
     pub created_at: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default)]
     pub creator_id: String,
     pub assignee_id: Option<String>,
     pub assigner_id: Option<String>,

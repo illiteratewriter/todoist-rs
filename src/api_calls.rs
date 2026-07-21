@@ -9,7 +9,7 @@ use crate::TaskResult;
 
 pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
     let response = client
-        .get("https://api.todoist.com/rest/v2/projects")
+        .get("https://api.todoist.com/api/v1/projects")
         .send()
         .await
         .context("Failed to send request to fetch projects")?;
@@ -23,7 +23,11 @@ pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
         .await
         .context("Failed to read response text")?;
 
-    let serialized: Vec<projects::Project> = serde_json::from_str(&response_text)
+    let parsed_json: serde_json::Value = serde_json::from_str(&response_text)
+        .context("Failed to parse JSON")?;
+    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+    let serialized: Vec<projects::Project> = serde_json::from_value(array_data.clone())
         .context("Failed to deserialize response into Vec<Project>")?;
     Ok(serialized)
 }
@@ -32,7 +36,7 @@ pub async fn fetch_tasks(
     client: &reqwest::Client,
 ) -> Result<Vec<tasks::Task>, Box<dyn std::error::Error>> {
     let response = client
-        .get("https://api.todoist.com/rest/v2/tasks")
+        .get("https://api.todoist.com/api/v1/tasks")
         .send()
         .await
         .unwrap()
@@ -40,7 +44,10 @@ pub async fn fetch_tasks(
         .await
         .unwrap();
 
-    let serialized: Vec<tasks::Task> = serde_json::from_str(&response).unwrap();
+    let parsed_json: serde_json::Value = serde_json::from_str(&response).unwrap();
+    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+    let serialized: Vec<tasks::Task> = serde_json::from_value(array_data.clone()).unwrap();
     Ok(serialized)
 }
 
@@ -48,7 +55,7 @@ pub async fn fetch_sections(
     client: &reqwest::Client,
 ) -> Result<Vec<sections::Section>, Box<dyn std::error::Error>> {
     let response = client
-        .get("https://api.todoist.com/rest/v2/sections")
+        .get("https://api.todoist.com/api/v1/sections")
         .send()
         .await
         .unwrap()
@@ -56,7 +63,10 @@ pub async fn fetch_sections(
         .await
         .unwrap();
 
-    let serialized: Vec<sections::Section> = serde_json::from_str(&response).unwrap();
+    let parsed_json: serde_json::Value = serde_json::from_str(&response).unwrap();
+    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+    let serialized: Vec<sections::Section> = serde_json::from_value(array_data.clone()).unwrap();
     Ok(serialized)
 }
 
@@ -67,7 +77,7 @@ pub async fn update_task(
     tx: std::sync::mpsc::Sender<TaskResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = match client
-        .post(format!("https://api.todoist.com/rest/v2/tasks/{}", task_id))
+        .post(format!("https://api.todoist.com/api/v1/tasks/{}", task_id))
         .json(&json)
         .send()
         .await
@@ -122,7 +132,7 @@ pub async fn close_task(
     client: &reqwest::Client,
     task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let url = format!("https://api.todoist.com/rest/v2/tasks/{}/close", task_id);
+    let url = format!("https://api.todoist.com/api/v1/tasks/{}/close", task_id);
 
     let _response = client.post(url).send().await?;
 
@@ -133,7 +143,7 @@ pub async fn delete_task(
     client: &reqwest::Client,
     task_id: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let url = format!("https://api.todoist.com/rest/v2/tasks/{}", task_id);
+    let url = format!("https://api.todoist.com/api/v1/tasks/{}", task_id);
 
     let _response = client.delete(url).send().await?;
 
@@ -146,7 +156,7 @@ pub async fn create_task<'a>(
     tx: std::sync::mpsc::Sender<TaskResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = client
-        .post("https://api.todoist.com/rest/v2/tasks")
+        .post("https://api.todoist.com/api/v1/tasks")
         .json(&json)
         .send()
         .await

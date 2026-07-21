@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::widgets::ListState;
 use reqwest::Client;
 
@@ -13,6 +13,15 @@ pub fn handle_task_editor(
     client: Client,
     tx: std::sync::mpsc::Sender<TaskResult>,
 ) {
+    // Alt + Enter or CTRL + n to make new line
+    if (key.code == KeyCode::Enter && key.modifiers.contains(KeyModifiers::ALT)) ||
+       (key.code == KeyCode::Char('n') && key.modifiers.contains(KeyModifiers::CONTROL)) {
+        if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
+            app.task_edit.description.insert_newline();
+        }
+        return;
+    }
+
     if key.code == KeyCode::Esc {
         app.show_task_editor = !app.show_task_editor;
     } else if key.code == KeyCode::Enter {
@@ -33,6 +42,22 @@ pub fn handle_task_editor(
             let _ = api_calls::update_task(&client, json, task.id.to_string(), tx).await;
         });
     }
+
+    // Shift + Tab to go to previous tab
+    if key.code == KeyCode::BackTab || (key.code == KeyCode::Tab && key.modifiers.contains(KeyModifiers::SHIFT)) {
+        if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
+            app.task_edit.currently_editing = task_edit::CurrentlyEditing::ChildTasks
+        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Description {
+            app.task_edit.currently_editing = task_edit::CurrentlyEditing::Content
+        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::DueString {
+            app.task_edit.currently_editing = task_edit::CurrentlyEditing::Description
+        } else if app.task_edit.currently_editing == task_edit::CurrentlyEditing::ChildTasks {
+            app.task_edit.currently_editing = task_edit::CurrentlyEditing::DueString
+        }
+        app.task_edit.update_cursor_styles();
+        return;
+    }
+
     if key.code == KeyCode::Tab {
         if app.task_edit.currently_editing == task_edit::CurrentlyEditing::Content {
             app.task_edit.currently_editing = task_edit::CurrentlyEditing::Description
@@ -126,6 +151,15 @@ pub fn handle_new_tasks(
     client: Client,
     tx: std::sync::mpsc::Sender<TaskResult>,
 ) {
+    // ALT + Enter or CTRL + n to make new line
+    if (key.code == KeyCode::Enter && key.modifiers.contains(KeyModifiers::ALT)) ||
+       (key.code == KeyCode::Char('n') && key.modifiers.contains(KeyModifiers::CONTROL)) {
+        if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
+            app.new_task.description.insert_newline();
+        }
+        return;
+    }
+
     if key.code == KeyCode::Esc {
         app.show_new_task = !app.show_new_task;
     } else if key.code == KeyCode::Enter {
@@ -139,6 +173,19 @@ pub fn handle_new_tasks(
             }
         });
     }
+
+    // Shift + Tab to go to previous tab
+    if key.code == KeyCode::BackTab || (key.code == KeyCode::Tab && key.modifiers.contains(KeyModifiers::SHIFT)) {
+        if app.new_task.currently_editing == new_task::CurrentlyEditing::Content {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::DueString
+        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::Description {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::Content
+        } else if app.new_task.currently_editing == new_task::CurrentlyEditing::DueString {
+            app.new_task.currently_editing = new_task::CurrentlyEditing::Description
+        }
+        return;
+    }
+
     if key.code == KeyCode::Tab {
         if app.new_task.currently_editing == new_task::CurrentlyEditing::Content {
             app.new_task.currently_editing = new_task::CurrentlyEditing::Description

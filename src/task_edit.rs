@@ -24,9 +24,12 @@ impl<'a> TaskEdit<'a> {
         current_task_index: usize,
         currently_editing: CurrentlyEditing,
     ) -> Self {
+        // split with \n
+        let description_lines = description.split('\n').map(|s| s.to_string()).collect::<Vec<String>>();
+
         let mut task_edit = TaskEdit {
             content: TextArea::from(vec![content]),
-            description: TextArea::from(vec![description]),
+            description: TextArea::new(description_lines),
             due_string: TextArea::from(vec![due_string]),
             currently_editing,
             children,
