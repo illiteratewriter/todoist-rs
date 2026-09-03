@@ -7,67 +7,123 @@ use crate::tasks;
 use crate::tasks::Task;
 use crate::TaskResult;
 
-pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
-    let response = client
-        .get("https://api.todoist.com/api/v1/projects")
-        .send()
-        .await
-        .context("Failed to send request to fetch projects")?;
+// 200 is the largest page the Unified API v1 accepts; larger values return an
+// empty result set instead of an error.
+const PAGE_LIMIT: u32 = 200;
 
-    if response.status().is_client_error() {
-        return Err(color_eyre::eyre::eyre!("Received a 400 error: {:?}. This would most likely be because of an incorrect token. Check your config file for token.", response.status()));
+fn next_cursor(parsed_json: &serde_json::Value) -> Option<String> {
+    parsed_json
+        .get("next_cursor")
+        .and_then(|value| value.as_str())
+        .map(|value| value.to_string())
+}
+
+pub async fn fetch_projects(client: &Client) -> Result<Vec<projects::Project>> {
+    let mut all_projects: Vec<projects::Project> = Vec::new();
+    let mut cursor: Option<String> = None;
+
+    loop {
+        let mut request = client
+            .get("https://api.todoist.com/api/v1/projects")
+            .query(&[("limit", PAGE_LIMIT)]);
+
+        if let Some(ref cursor) = cursor {
+            request = request.query(&[("cursor", cursor)]);
+        }
+
+        let response = request
+            .send()
+            .await
+            .context("Failed to send request to fetch projects")?;
+
+        if response.status().is_client_error() {
+            return Err(color_eyre::eyre::eyre!("Received a 400 error: {:?}. This would most likely be because of an incorrect token. Check your config file for token.", response.status()));
+        }
+
+        let response_text = response
+            .text()
+            .await
+            .context("Failed to read response text")?;
+
+        let parsed_json: serde_json::Value = serde_json::from_str(&response_text)
+            .context("Failed to parse JSON")?;
+        let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+        let serialized: Vec<projects::Project> = serde_json::from_value(array_data.clone())
+            .context("Failed to deserialize response into Vec<Project>")?;
+        all_projects.extend(serialized);
+
+        cursor = next_cursor(&parsed_json);
+        if cursor.is_none() {
+            break;
+        }
     }
 
-    let response_text = response
-        .text()
-        .await
-        .context("Failed to read response text")?;
-
-    let parsed_json: serde_json::Value = serde_json::from_str(&response_text)
-        .context("Failed to parse JSON")?;
-    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
-
-    let serialized: Vec<projects::Project> = serde_json::from_value(array_data.clone())
-        .context("Failed to deserialize response into Vec<Project>")?;
-    Ok(serialized)
+    Ok(all_projects)
 }
 
 pub async fn fetch_tasks(
     client: &reqwest::Client,
 ) -> Result<Vec<tasks::Task>, Box<dyn std::error::Error>> {
-    let response = client
-        .get("https://api.todoist.com/api/v1/tasks")
-        .send()
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
+    let mut all_tasks: Vec<tasks::Task> = Vec::new();
+    let mut cursor: Option<String> = None;
 
-    let parsed_json: serde_json::Value = serde_json::from_str(&response).unwrap();
-    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+    loop {
+        let mut request = client
+            .get("https://api.todoist.com/api/v1/tasks")
+            .query(&[("limit", PAGE_LIMIT)]);
 
-    let serialized: Vec<tasks::Task> = serde_json::from_value(array_data.clone()).unwrap();
-    Ok(serialized)
+        if let Some(ref cursor) = cursor {
+            request = request.query(&[("cursor", cursor)]);
+        }
+
+        let response = request.send().await?.text().await?;
+
+        let parsed_json: serde_json::Value = serde_json::from_str(&response)?;
+        let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+        let serialized: Vec<tasks::Task> = serde_json::from_value(array_data.clone())?;
+        all_tasks.extend(serialized);
+
+        cursor = next_cursor(&parsed_json);
+        if cursor.is_none() {
+            break;
+        }
+    }
+
+    Ok(all_tasks)
 }
 
 pub async fn fetch_sections(
     client: &reqwest::Client,
 ) -> Result<Vec<sections::Section>, Box<dyn std::error::Error>> {
-    let response = client
-        .get("https://api.todoist.com/api/v1/sections")
-        .send()
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
+    let mut all_sections: Vec<sections::Section> = Vec::new();
+    let mut cursor: Option<String> = None;
 
-    let parsed_json: serde_json::Value = serde_json::from_str(&response).unwrap();
-    let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+    loop {
+        let mut request = client
+            .get("https://api.todoist.com/api/v1/sections")
+            .query(&[("limit", PAGE_LIMIT)]);
 
-    let serialized: Vec<sections::Section> = serde_json::from_value(array_data.clone()).unwrap();
-    Ok(serialized)
+        if let Some(ref cursor) = cursor {
+            request = request.query(&[("cursor", cursor)]);
+        }
+
+        let response = request.send().await?.text().await?;
+
+        let parsed_json: serde_json::Value = serde_json::from_str(&response)?;
+        let array_data = parsed_json.get("results").unwrap_or(&parsed_json);
+
+        let serialized: Vec<sections::Section> = serde_json::from_value(array_data.clone())?;
+        all_sections.extend(serialized);
+
+        cursor = next_cursor(&parsed_json);
+        if cursor.is_none() {
+            break;
+        }
+    }
+
+    Ok(all_sections)
 }
 
 pub async fn update_task(
